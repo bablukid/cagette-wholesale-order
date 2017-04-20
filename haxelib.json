@@ -1,0 +1,14 @@
+{
+  "name": "cagette-wholesale-order",
+  "url" : "",  
+  "license": "GPL",
+  "classPath": "src",
+  "tags": ["web", "neko"],
+  "description": "",
+  "version": "1.0.0",
+  "releasenote": "",
+  "contributors": ["bablukid"],
+  "dependencies": {
+  
+  }
+}
