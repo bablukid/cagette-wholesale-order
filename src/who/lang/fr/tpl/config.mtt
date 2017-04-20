@@ -1,0 +1,16 @@
+::use 'contractadmin/design.mtt'::
+	
+	<h3>Commande en gros</h3>
+
+	<p>
+		Choisissez d'activer ou non la gestion de commande en gros.<br/>
+		<b>Activez ce module sur le contrat au détail.</b><br/>
+		Le délai est le nombre de jour après fermeture des commandes pendant lequel vous pourrez rééquilibrer les commandes.
+	</p>
+
+	<p>
+		::raw form::
+	</p>
+
+
+::end::

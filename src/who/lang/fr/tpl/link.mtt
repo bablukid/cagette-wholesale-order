@@ -1,0 +1,33 @@
+::use 'contractadmin/design.mtt'::
+	
+	<h3>Commande en gros</h3>
+
+	<p ::cond form!=null::>
+		::raw form::
+	</p>
+
+	<p ::cond products!=null::>
+		
+		<table class="table">
+		<tr>
+			<th>::c.name::</th>
+			<th></th>
+			<th>::c2.name::</th>
+		</tr>
+		::foreach p products::
+		<tr>
+			<td>::p._p1.getName()::</td>
+			<td><i class="fa fa-arrow-right" aria-hidden="true"></i></td>
+			<td>::p._p2.getName()::</td>
+		</tr>
+		
+		::end::	
+		</table>
+		
+		<a ::cond products.length==0:: href="?autolink=1" class="btn btn-default">Liaison automatique</a>
+		
+	</p>
+
+
+
+::end::
