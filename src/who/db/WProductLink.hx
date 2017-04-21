@@ -58,5 +58,53 @@ class WProductLink extends Object
 		
 	}
 	
+	/**
+	 * Moves the distribution to the wholesale contract + update orders to wholesale products
+	 */
+	public static function confirm(d:db.Distribution){
+		
+		var links = get(d.contract);
+		
+		var retailToWholesale = new Map();
+		for ( l in links) retailToWholesale[l.p1.id] = l.p2;
+		
+		var c1 = d.contract;
+		var c2 = links.first().p2.contract;
+		
+		//moves distrib
+		d.lock();
+		d.contract = c2;
+		d.update();
+		
+		//update orders
+		for ( o in d.getOrders()){
+			
+			o.lock();
+			
+			if (retailToWholesale[o.product.id] == null){
+				//no linkage
+				continue;
+			}
+			
+			var qt1 = o.product.qt;
+			var qt2 = retailToWholesale[o.product.id].qt;
+			
+			//trace(o.quantity+" "+o.product.name+"<br/>");
+			
+			o.product = retailToWholesale[o.product.id];
+			o.quantity *= (qt1 / qt2);
+			o.productPrice = o.product.price;
+			
+			//trace("Devient "+o.quantity+" "+o.product.name+"<br/>");
+			
+			o.update();
+			
+		}
+		
+		return d;
+		
+		
+	}
+	
 }
 

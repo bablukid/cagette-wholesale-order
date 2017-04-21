@@ -1,0 +1,74 @@
+::use 'contractadmin/design.mtt'::
+	
+	<h3>Commande en gros : Equilibrage de commande</h3>
+
+
+<p>
+	Distribution du ::hDate(d.date)::
+	
+	
+</p>
+
+	::set ok = true::
+	<p ::cond products!=null::>
+		
+		<table class="table table-bordered">
+		<tr>
+			<th>Produit au détail</th>
+			<th>Gros</th>
+			<th>Commande</th>
+			<th>Caisses entières</th>
+			<th>Reste dans la<br/>dernière caisse</th>
+			
+		</tr>
+		::foreach p products::
+		<tr>
+			<td>::p._p1.getName()::</td>
+			<td>::p._p2.qt:: ::unit(p._p2._unitType)::</td>
+			<td>
+				
+				::set qt = totalOrder(p._p1)::
+				::qt:: ::unit(p._p2._unitType)::
+			</td>
+			<th class="text-center">
+				
+				::Math.floor(qt/p._p2.qt)::
+				
+			</th>
+			
+			::set remain = qt%p._p2.qt::			
+			::if(remain==0)::
+				<td class="success">$$check(::true::)</td>
+			::else::
+				<td class="danger">$$check(::false::) ::remain:: ::unit(p._p2._unitType)::</td>
+				::set ok = false::
+			::end::
+				
+			<td>
+				<a href="/p/who/detail/::d.id::/::p._p1.id::" class="btn btn-default btn-sm">Détail</a>
+			</td>
+			
+		</tr>
+		
+		::end::	
+		</table>
+		
+		<div class="text-center">
+			::if(ok)::
+			<p>
+				En confirmant cette commande, vous allez tranformer cette commande au détail en commande en gros.
+			</p>
+			<p>
+				<a href="/p/who/confirm/::d.id::/" class="btn btn-primary btn-lg">
+					<span class="glyphicon glyphicon-ok"></span>
+					Confirmer cette commande
+				</a>
+			</p>	
+			::end::
+		</div>
+		
+	</p>
+
+
+
+::end::

@@ -26,6 +26,9 @@ class Main extends controller.Controller
 		view.active = who.db.WConfig.isActive(c);
 		
 		init(c);
+		var now = Date.now();
+		view.distributions = db.Distribution.manager.search($contract==c && $orderEndDate < now && $date > now,false);
+		
 	}
 	
 
@@ -82,6 +85,52 @@ class Main extends controller.Controller
 		}
 		
 	}
+	
+	
+	@logged @tpl("plugin/who/balance.mtt")
+	public function doBalance(d:db.Distribution){
+		
+		init(d.contract);
+		
+		var products = who.db.WProductLink.get(d.contract);
+		view.products = products;
+		view.d = d;
+		view.totalOrder = function(p:db.Product){
+			
+			var orders = db.UserContract.manager.search($distribution == d && $product == p, false);
+			
+			var tot = 0.0;
+			for ( o in orders ) tot += o.quantity;
+			return tot;
+			
+		}
+		
+	}
+	
+	@logged @tpl("plugin/who/balance.mtt")
+	public function doConfirm(d:db.Distribution){
+		
+		init(d.contract);
+		
+		var d2 = who.db.WProductLink.confirm(d);
+		
+		throw Ok("/contractAdmin/orders/"+d2.contract.id+"?d="+d2.id,"Votre commande de gros est confirmée !");
+		
+		
+	}
+	
+	
+	@logged @tpl("plugin/who/detail.mtt")
+	public function doDetail(d:db.Distribution,p:db.Product){
+		
+		init(d.contract);
+		
+		view.orders = db.UserContract.prepare( db.UserContract.manager.search($distribution == d && $product == p, false) );
+		view.p1 = p;
+		view.p2 = who.db.WProductLink.manager.select($p1 == p, false).p2;
+		view.d = d;
+		
+	}	
 	
 	
 }
