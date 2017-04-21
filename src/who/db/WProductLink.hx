@@ -10,15 +10,19 @@ class WProductLink extends Object
 	@:relation(p1Id) public var p1 : db.Product;//detail product
 	@:relation(p2Id) public var p2 : db.Product;//detail product
 	
-	public static function get(c:db.Contract){
+	/**
+	 * @deprecated
+	 * @param	c
+	 */
+	/*public static function get(c:db.Contract){
 		
 		var pids = tools.ObjectListTool.getIds(c.getProducts(false));
 		
 		return who.db.WProductLink.manager.search($p1Id in pids, false);		
-	}
+	}*/
 	
 	/**
-	 * autolink with Cagette Pro Data
+	 * autolink with Cagette Pro Data and store links
 	 */
 	public static function autolink(c1:db.Contract,c2:db.Contract){
 		var rc1 = connector.db.RemoteCatalog.getFromContract(c1);
@@ -45,9 +49,50 @@ class WProductLink extends Object
 				//trace('big est $big, little est $little <br/>');
 			}
 		}
-		
-		
 	}
+	
+	public static function linksAsMap(arr:Array<{p1:db.Product,p2:db.Product}>){
+		
+		var retailToWholesale = new Map();
+		for ( l in arr) retailToWholesale[l.p1.id] = l.p2;
+		return retailToWholesale;
+	}
+	
+	/**
+	 * get links on the fly
+	 */
+	public static function getLinks(c1:db.Contract,c2:db.Contract){
+		var rc1 = connector.db.RemoteCatalog.getFromContract(c1);
+		var c1off = rc1.getCatalog().getOffers();
+		
+		var rc2 = connector.db.RemoteCatalog.getFromContract(c2);
+		var c2off = rc2.getCatalog().getOffers();
+		
+		var out = [];
+		
+		for (off in c1off){
+			
+			//off is the retail product
+			
+			var offs = off.offer.product.getOffers();
+			
+			
+			var big = offs.first();
+			var little = off.offer;
+			//if ( big.id != little.id){
+				
+				var little = db.Product.getByRef(c1,little.ref);
+				var big = db.Product.getByRef(c2,big.ref);
+				
+				out.push({p1:little,p2:big });
+				//trace('big est $big, little est $little <br/>');
+			//}
+		}
+		
+		return out;
+	}
+	
+	
 	
 	public static function make(p1:db.Product, p2:db.Product){
 		var pl = new WProductLink();
@@ -63,13 +108,14 @@ class WProductLink extends Object
 	 */
 	public static function confirm(d:db.Distribution){
 		
-		var links = get(d.contract);
 		
-		var retailToWholesale = new Map();
-		for ( l in links) retailToWholesale[l.p1.id] = l.p2;
+		var conf = WConfig.getOrCreate(d.contract);
+		var links = getLinks(d.contract,conf.contract2);
+		
+		var retailToWholesale = linksAsMap(links);
 		
 		var c1 = d.contract;
-		var c2 = links.first().p2.contract;
+		var c2 = conf.contract2;
 		
 		//moves distrib
 		d.lock();

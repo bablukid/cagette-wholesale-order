@@ -22,13 +22,13 @@ class Main extends controller.Controller
 
 	@logged @tpl("plugin/who/default.mtt")
 	public function doDefault(c:db.Contract){
-		
-		view.active = who.db.WConfig.isActive(c);
+		var conf = who.db.WConfig.getOrCreate(c);
+		view.active = conf.active;
 		
 		init(c);
 		var now = Date.now();
 		view.distributions = db.Distribution.manager.search($contract==c && $orderEndDate < now && $date > now,false);
-		
+		view.links = conf.contract2==null ? [] : who.db.WProductLink.getLinks(c,conf.contract2);
 	}
 	
 
@@ -40,7 +40,8 @@ class Main extends controller.Controller
 		var conf = who.db.WConfig.getOrCreate(c);
 		
 		var f = sugoi.form.Form.fromSpod(conf);
-		f.removeElementByName("contractId");
+		f.removeElementByName("contract1Id");
+		f.getElement("contract2Id").label = "Contrat en gros correspondant";
 		f.getElement("delay").label = "Délai en jours";
 		
 		if (f.isValid()){
@@ -52,9 +53,12 @@ class Main extends controller.Controller
 		view.form = f;
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	@logged @tpl("plugin/who/link.mtt")
 	public function doLink(c:db.Contract,?c2:db.Contract){
-		
+		/*
 		init(c);
 		
 		
@@ -83,7 +87,7 @@ class Main extends controller.Controller
 			
 			
 		}
-		
+		*/
 	}
 	
 	
@@ -92,7 +96,9 @@ class Main extends controller.Controller
 		
 		init(d.contract);
 		
-		var products = who.db.WProductLink.get(d.contract);
+		var conf = who.db.WConfig.getOrCreate(d.contract);
+		
+		var products = who.db.WProductLink.getLinks(d.contract,conf.contract2);
 		view.products = products;
 		view.d = d;
 		view.totalOrder = function(p:db.Product){
@@ -121,13 +127,17 @@ class Main extends controller.Controller
 	
 	
 	@logged @tpl("plugin/who/detail.mtt")
-	public function doDetail(d:db.Distribution,p:db.Product){
+	public function doDetail(d:db.Distribution, p:db.Product){
+		
+		var conf = who.db.WConfig.getOrCreate(d.contract);		
+		var links = who.db.WProductLink.getLinks(d.contract,conf.contract2);
+		var retailToWholesale = who.db.WProductLink.linksAsMap(links);
 		
 		init(d.contract);
 		
 		view.orders = db.UserContract.prepare( db.UserContract.manager.search($distribution == d && $product == p, false) );
 		view.p1 = p;
-		view.p2 = who.db.WProductLink.manager.select($p1 == p, false).p2;
+		view.p2 = retailToWholesale[p.id];
 		view.d = d;
 		
 	}	
