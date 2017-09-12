@@ -12,19 +12,18 @@ class WConfig extends Object
 	@formPopulate("populate") @:relation(contract2Id) public var contract2 : SNull<db.Contract>;			
 	
 	public var active : SBool;
-	public var delay : SInt; //number of days after orders closing to complete the wholesale order
+	//public var delay : SInt; //number of days after orders closing to complete the wholesale order
 	
 	
-	//public static function isActive(c:db.Contract):WConfig{
-		//
-		//var x = getOrCreate(c);
-		//if (x != null && x.active){
-			//return x;
-		//}else{
-			//return null;
-		//}
-		//
-	//}
+	public static function isActive(c:db.Contract):WConfig{
+	
+		var x = manager.select($contract1 == c, false);
+		if (x != null && x.active){
+			return x;
+		}else{
+			return null;
+		}	
+	}
 	
 	public static function getOrCreate(c:db.Contract):WConfig{
 		
@@ -33,11 +32,10 @@ class WConfig extends Object
 			x = new WConfig();
 			x.contract1 = c;
 			x.active = false;
-			x.delay = 3;
+			//x.delay = 3;
 			x.insert();
 		}
 		return x;
-		
 	}
 	
 	/**

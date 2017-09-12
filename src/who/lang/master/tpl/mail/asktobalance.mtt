@@ -1,0 +1,35 @@
+:: use 'mail/design.mtt'::
+
+<p>
+	Bonjour, vous êtes le coordinateur du contrat <b>::d._contract.name::</b>.<br/>
+</p>
+<p>
+	Le module de <b>commande en gros</b> est activé sur ce contrat, ce qui veut dire qu'en tant que coordinateur 
+	vous devez ajuster les quantités de produits commandés afin d'envoyer une commande en gros au producteur (caisses, cartons...etc).<br/>	
+</p>
+<p>
+	La commande vient de se fermer, c'est donc le moment d'ajuster les quantités.<br/>
+	<a href="http://::HOST::/p/who/::d._contract.id::"><b>Cliquez ici pour ajuster la commande</b></a> 
+	( vous devez être connecté à votre groupe sur Cagette.net )
+</p>
+<hr/>
+<p>
+	<table class="table">
+		<tr>
+			<th>Adhérent</th>
+			<th>Qté</th>
+			<th>Produit</th>
+		</tr>
+	::foreach o orders::
+	<tr>
+		<td>::o._user.getName()::</td>
+		<td>::o.quantity::</td>
+		<td>::o._product.getName()::</td>
+	</tr>
+	::end::
+	</table>
+</p>
+
+
+
+::end::

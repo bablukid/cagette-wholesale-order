@@ -60,22 +60,24 @@ class WProductLink extends Object
 	
 	/**
 	 * get links on the fly
+	 * 
+	 * @param excludeIdenticalProducts	Exclude links between 2 same products
 	 */
-	public static function getLinks(c1:db.Contract,c2:db.Contract){
+	public static function getLinks(c1:db.Contract,c2:db.Contract, ?excludeIdenticalProducts=false ){
 		var rc1 = connector.db.RemoteCatalog.getFromContract(c1);
+		if (rc1 == null) return null;
 		var c1off = rc1.getCatalog().getOffers();
 		
 		var rc2 = connector.db.RemoteCatalog.getFromContract(c2);
+		if (rc2 == null) return null;
 		var c2off = rc2.getCatalog().getOffers();
 		
 		var out = [];
 		
 		for (off in c1off){
 			
-			//off is the retail product
-			
+			//off is the retail product			
 			var offs = off.offer.product.getOffers();
-			
 			
 			var big = offs.first();
 			var little = off.offer;
@@ -83,8 +85,9 @@ class WProductLink extends Object
 				
 				var little = db.Product.getByRef(c1,little.ref);
 				var big = db.Product.getByRef(c2,big.ref);
-				
-				out.push({p1:little,p2:big });
+				if (little == null || big == null) continue;
+				if (excludeIdenticalProducts && little.ref == big.ref) continue;
+				out.push({p1:little,p2:big});
 				//trace('big est $big, little est $little <br/>');
 			//}
 		}
@@ -92,6 +95,15 @@ class WProductLink extends Object
 		return out;
 	}
 	
+	
+	/*function totalOrder(p:db.Product,d:db.Distribution){
+			
+		var orders = db.UserContract.manager.search($distribution == d && $product == p, false);			
+		var tot = 0.0;
+		for ( o in orders ) tot += o.quantity;
+		return tot;
+		
+	}*/
 	
 	
 	public static function make(p1:db.Product, p2:db.Product){

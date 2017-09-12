@@ -1,0 +1,86 @@
+::use 'contractadmin/design.mtt'::
+	
+	<h3>Commande en gros : Ajustage de commande</h3>
+
+
+<p>
+	Distribution du ::hDate(d.date)::
+	
+	
+</p>
+
+	::set ok = true::
+	<p ::cond products!=null::>
+		
+		<table class="table table-bordered">
+		<tr>
+			<th>Produit au détail</th>
+			<th>Gros</th>
+			<th>Commandé</th>
+			<th>Caisses entières</th>
+			<th>Manque</th>
+			
+		</tr>
+		::foreach p products::
+		
+		::if(p.p1.ref==p.p2.ref)::
+		::set class="disabled"::
+		::else::
+		::set class=""::
+		::end::
+		
+		<tr class="::class::">
+			<td>
+				<img src="::p.p1.getImage()::" style="width:32px;height:32px;" />&nbsp;::p.p1.getName()::
+			</td>
+			<td>::p.p2.qt:: ::unit(p.p2._unitType)::</td>
+			<td>
+				
+				::set qt = totalOrder(p.p1)*p.p1.qt::
+				::qt:: ::unit(p.p2._unitType)::
+			</td>
+			<th class="text-center">
+				
+				::Math.floor(qt/p.p2.qt)::
+				
+			</th>
+			
+			::set missing =  p.p2.qt - (qt % p.p2.qt)::			
+			::if( (qt % p.p2.qt)==0 )::
+				<td class="success">$$check(::true::) 0 ::unit(p.p2._unitType)::</td>
+			::else::
+				<td class="danger">$$check(::false::) ::missing:: ::unit(p.p2._unitType)::</td>
+				::set ok = false::
+			::end::
+				
+			<td>
+				<a href="/p/who/detail/::d.id::/::p.p1.id::" class="btn btn-default btn-sm">Détail</a>
+			</td>
+			
+		</tr>
+		
+		::end::	
+		</table>
+		
+		<div class="text-center">
+			::if(ok)::
+			<p>
+				En confirmant cette commande, vous allez tranformer cette commande au détail en commande en gros.
+			</p>
+			<p>
+				<a href="/p/who/confirm/::d.id::/?token=::token::" class="btn btn-primary btn-lg">
+					<span class="glyphicon glyphicon-ok"></span>
+					Confirmer cette commande
+				</a>
+			</p>	
+			::end::
+		</div>
+		
+	</p>
+
+	<p>
+		<a href="/p/who/::d._contract.id::" class="btn btn-default"><i class="fa fa-chevron-left" aria-hidden="true"></i> Retour</a>
+	</p>
+
+
+::end::
