@@ -14,7 +14,9 @@ class Main extends controller.Controller
 	}
 	
 	function init(c){
-		if (!app.user.isContractManager(c)) throw "accès interdit";		
+		
+		if (!app.user.isContractManager(c)) throw Error("/", t._("Access forbidden") );
+		
 		new controller.ContractAdmin().sendNav(c);
 		view.c = c;
 		view.nav = ["contractadmin","who"];
@@ -41,12 +43,26 @@ class Main extends controller.Controller
 		
 		var f = sugoi.form.Form.fromSpod(conf);
 		f.removeElementByName("contract1Id");
-		f.getElement("contract2Id").label = "Contrat en gros correspondant";
-		//f.getElement("delay").label = "Délai en jours";
+		var e = f.getElement("contract2Id");
+		e.label = "Contrat en gros correspondant";
+		
+
 		
 		if (f.isValid()){
 			f.toSpod(conf);
+			
 			conf.update();
+			
+			if (conf.active && conf.contract2 == null){
+				throw Error("/p/who/config/"+c.id , "Il faut choisir un contrat de gros correspondant à votre contrat au détail");
+			}
+			
+			if(conf.active){
+				//if no links are found, error
+				var links = who.db.WProductLink.getLinks(conf.contract1, conf.contract2,true);
+				if (links.length == 0) throw Error("/p/who/"+c.id , "Le contrat choisi est incompatible avec <b>"+c.name+"</b>");
+			}
+			
 			throw Ok("/p/who/"+c.id,"Configuration mise à jour");
 		}
 		

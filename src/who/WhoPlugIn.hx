@@ -57,6 +57,7 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 				if (name == "home"){
 					
 					//find distributions with wholesale-order plugin activated
+					if (App.current.user == null || App.current.user.amap == null) return;
 					var now = Date.now();
 					var cids = db.Contract.getActiveContracts(App.current.user.amap);
 					
@@ -80,6 +81,7 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 							var html = App.current.processTemplate("plugin/who/block/home.mtt", {
 								d:d,
 								products:products,
+								manager:App.current.user.isContractManager(d.contract),
 								totalOrder:totalOrder,
 								unit:App.current.view.unit,
 								Math:Math
