@@ -63,11 +63,13 @@ class WProductLink extends Object
 	 * 
 	 * @param excludeIdenticalProducts	Exclude links between 2 same products
 	 */
-	public static function getLinks(c1:db.Contract,c2:db.Contract, ?excludeIdenticalProducts=false ){
+	public static function getLinks(c1:db.Contract, c2:db.Contract, ?excludeIdenticalProducts = false ){
+		
 		var rc1 = connector.db.RemoteCatalog.getFromContract(c1);
 		if (rc1 == null) return null;
 		var c1off = rc1.getCatalog().getOffers();
 		
+		//big 
 		var rc2 = connector.db.RemoteCatalog.getFromContract(c2);
 		if (rc2 == null) return null;
 		var c2off = rc2.getCatalog().getOffers();
@@ -79,17 +81,25 @@ class WProductLink extends Object
 			//off is the retail product			
 			var offs = off.offer.product.getOffers();
 			
-			var big = offs.first();
-			var little = off.offer;
-			//if ( big.id != little.id){
-				
-				var little = db.Product.getByRef(c1,little.ref);
-				var big = db.Product.getByRef(c2,big.ref);
-				if (little == null || big == null) continue;
-				if (excludeIdenticalProducts && little.ref == big.ref) continue;
-				out.push({p1:little,p2:big});
-				//trace('big est $big, little est $little <br/>');
-			//}
+			var bigOffer = offs.first();
+			var littleOffer = off.offer;
+			
+			var little = db.Product.getByRef(c1,littleOffer.ref);
+			var big = db.Product.getByRef(c2,bigOffer.ref);
+			if (little == null || big == null) continue;
+			if (excludeIdenticalProducts && little.ref == big.ref) continue;
+			
+			out.push({p1:little,p2:big});
+
+			//big products should have floatQt enabled ! Otherwise editing an order will round quantities
+			if (!bigOffer.product.hasFloatQt){
+				bigOffer.product.lock();
+				bigOffer.product.hasFloatQt = true;
+				bigOffer.product.update();
+				var cat = rc2.getCatalog();
+				cat.toSync();
+			}
+			
 		}
 		
 		return out;
