@@ -59,7 +59,8 @@ class Main extends controller.Controller
 			
 			if(conf.active){
 				//if no links are found, error
-				var links = who.db.WProductLink.getLinks(conf.contract1, conf.contract2,true);
+				var links = who.db.WProductLink.getLinks(conf.contract1, conf.contract2, true);
+				if(links==null) throw Error("/p/who/"+c.id , "Configuration invalide.");
 				if (links.length == 0) throw Error("/p/who/"+c.id , "Le contrat choisi est incompatible avec <b>"+c.name+"</b>");
 			}
 			
