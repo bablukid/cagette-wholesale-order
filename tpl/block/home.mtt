@@ -32,11 +32,13 @@ Essayez d'ajuster votre commande en conséquence.
 				<td>
 					::p.p1.name::
 				</td>
-				<td>::p.p2.qt::&nbsp;::unit(p.p2._unitType)::</td>
+				<td>
+					::p.p2.qt::&nbsp;::unit(p.p2._unitType,false)::
+				</td>
 				<td>
 					
 					::set qt = totalOrder(p.p1)*p.p1.qt::
-					::qt::&nbsp;::unit(p.p2._unitType)::
+					::qt::&nbsp;::unit(p.p2._unitType,false)::
 				</td>
 				<th class="text-center">
 					::Math.floor(qt/p.p2.qt)::
@@ -45,10 +47,10 @@ Essayez d'ajuster votre commande en conséquence.
 				::set missing =  p.p2.qt - (qt % p.p2.qt)::			
 				::if( (qt % p.p2.qt)==0 )::
 					<td class="success">$$check(::true::)
-					<br/>0&nbsp;::unit(p.p2._unitType)::</td>
+					<br/>0&nbsp;::unit(p.p2._unitType,false)::</td>
 				::else::
 					<td class="danger">$$check(::false::)
-					<br/>::missing::&nbsp;::unit(p.p2._unitType)::</td>
+					<br/>::missing::&nbsp;::unit(p.p2._unitType,false)::</td>
 				::end::
 			</tr>
 		::end::

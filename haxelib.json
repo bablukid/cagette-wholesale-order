@@ -10,5 +10,9 @@
   "contributors": ["bablukid"],
   "dependencies": {
   
-  }
+  },
+    "sugoi":{
+		"plugin":"who",
+		"tpl":"tpl"
+	}
 }

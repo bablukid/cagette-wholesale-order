@@ -33,7 +33,7 @@
 						
 						<div class="input-group">
 						  <input type="number" name="u::o.userId::" value="::o.quantity::" class="form-control form-inline" />
-						  <div class="input-group-addon">::unit(p1._unitType)::</div>
+						  <div class="input-group-addon">::unit(p1._unitType,false)::</div>
 						</div>
 						
 						
@@ -48,12 +48,12 @@
 				
 				<tr>
 					<td class="text-right">Total commande</td>
-					<td>::total:: ::unit(p1._unitType)::</td>
+					<td>::total:: ::unit(p1._unitType,false)::</td>
 				</tr>
 				
 				
 				<tr>
-					<td class="text-right">Caisses entières (::p2.qt:: ::unit(p2._unitType)::)</td>
+					<td class="text-right">Caisses entières (::p2.qt:: ::unit(p2._unitType,false)::)</td>
 					<td>::Math.floor(total/p2.qt)::</td>
 				</tr>
 				
@@ -62,9 +62,9 @@
 				<tr>
 					<td class="text-right">Il manque</td>
 					::if((total%p2.qt)==0)::
-						<td class="success">$$check(::true::) 0 ::unit(p2._unitType)::</td>
+						<td class="success">$$check(::true::) 0 ::unit(p2._unitType,false)::</td>
 					::else::
-						<td class="danger">$$check(::false::) ::missing:: ::unit(p2._unitType)::</td>
+						<td class="danger">$$check(::false::) ::missing:: ::unit(p2._unitType,false)::</td>
 					::end::
 				</tr>		
 				

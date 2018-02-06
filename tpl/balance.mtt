@@ -33,11 +33,11 @@
 			<td>
 				<img src="::p.p1.getImage()::" style="width:32px;height:32px;" />&nbsp;::p.p1.getName()::
 			</td>
-			<td>::p.p2.qt:: ::unit(p.p2._unitType)::</td>
+			<td>::p.p2.qt:: ::unit(p.p2._unitType,false)::</td>
 			<td>
 				
 				::set qt = totalOrder(p.p1)*p.p1.qt::
-				::qt:: ::unit(p.p2._unitType)::
+				::qt:: ::unit(p.p2._unitType,false)::
 			</td>
 			<th class="text-center">
 				
@@ -47,9 +47,9 @@
 			
 			::set missing =  p.p2.qt - (qt % p.p2.qt)::			
 			::if( (qt % p.p2.qt)==0 )::
-				<td class="success">$$check(::true::) 0 ::unit(p.p2._unitType)::</td>
+				<td class="success">$$check(::true::) 0 ::unit(p.p2._unitType,false)::</td>
 			::else::
-				<td class="danger">$$check(::false::) ::missing:: ::unit(p.p2._unitType)::</td>
+				<td class="danger">$$check(::false::) ::missing:: ::unit(p.p2._unitType,false)::</td>
 				::set ok = false::
 			::end::
 				

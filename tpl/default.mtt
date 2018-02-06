@@ -7,6 +7,7 @@
 		Il faut constituer deux contrats : un contenant les produits en quantité "gros", un autre contenant les produits en quantité "détail".
 		Seul ce dernier est à la vente pour que les adhérents commandent au détail.<br/>
 		Ce module permettra de transformer cette commande en commande en gros en la transférant vers le deuxième contrat en gros.
+		<b>Ne fonctionne pour l'instant qu'avec les contrats Cagette Pro</b>
 	</p>	
 	<hr/>
 
