@@ -46,8 +46,6 @@ class Main extends controller.Controller
 		var e = f.getElement("contract2Id");
 		e.label = "Contrat en gros correspondant";
 		
-
-		
 		if (f.isValid()){
 			f.toSpod(conf);
 			
@@ -62,6 +60,11 @@ class Main extends controller.Controller
 				var links = who.db.WProductLink.getLinks(conf.contract1, conf.contract2, true);
 				if(links==null) throw Error("/p/who/"+c.id , "Configuration invalide.");
 				if (links.length == 0) throw Error("/p/who/"+c.id , "Le contrat choisi est incompatible avec <b>"+c.name+"</b>");
+			}
+			
+			//same group ?
+			if ( conf.contract1.amap.id != conf.contract2.amap.id){
+				throw Error("/p/who/"+c.id , "Les deux contrats ne font pas partie du même groupe.");
 			}
 			
 			throw Ok("/p/who/"+c.id,"Configuration mise à jour");

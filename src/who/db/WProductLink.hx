@@ -3,12 +3,12 @@ import sys.db.Object;
 import sys.db.Types;
 import Common;
 
-@:id(p1Id,p2Id)
-class WProductLink extends Object
+//@:id(p1Id,p2Id)
+class WProductLink /*extends Object*/
 {
 	
-	@:relation(p1Id) public var p1 : db.Product;//detail product
-	@:relation(p2Id) public var p2 : db.Product;//detail product
+	//@:relation(p1Id) public var p1 : db.Product;//detail product
+	//@:relation(p2Id) public var p2 : db.Product;//detail product
 	
 	/**
 	 * @deprecated
@@ -24,7 +24,7 @@ class WProductLink extends Object
 	/**
 	 * autolink with Cagette Pro Data and store links
 	 */
-	public static function autolink(c1:db.Contract,c2:db.Contract){
+	/*public static function autolink(c1:db.Contract,c2:db.Contract){
 		var rc1 = connector.db.RemoteCatalog.getFromContract(c1);
 		var c1off = rc1.getCatalog().getOffers();
 		
@@ -49,7 +49,7 @@ class WProductLink extends Object
 				//trace('big est $big, little est $little <br/>');
 			}
 		}
-	}
+	}*/
 	
 	public static function linksAsMap(arr:Array<{p1:db.Product,p2:db.Product}>){
 		
@@ -116,23 +116,26 @@ class WProductLink extends Object
 	}*/
 	
 	
-	public static function make(p1:db.Product, p2:db.Product){
+	/*public static function make(p1:db.Product, p2:db.Product){
 		var pl = new WProductLink();
 		pl.p1 = p1;
 		pl.p2 = p2;
 		pl.insert();
 		return pl;
-		
-	}
+	}*/
 	
 	/**
 	 * Moves the distribution to the wholesale contract + update orders to wholesale products
 	 */
 	public static function confirm(d:db.Distribution){
 		
-		
 		var conf = WConfig.getOrCreate(d.contract);
-		var links = getLinks(d.contract,conf.contract2);
+		var links = getLinks(d.contract, conf.contract2);
+		
+		//check same group ?
+		if ( conf.contract1.amap.id != conf.contract2.amap.id){
+			throw "Les deux contrats ne font pas partie du même groupe.";
+		}
 		
 		var retailToWholesale = linksAsMap(links);
 		
