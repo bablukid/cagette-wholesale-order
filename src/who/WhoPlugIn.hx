@@ -97,27 +97,4 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 		}
 	}
 	
-
-	
-	public function getName() {
-		return name;
-	}
-	
-	public function getController() {
-		return null;
-	}
-	
-	public function isInstalled():Bool {
-		
-		var a = sys.FileSystem.exists(App.config.PATH + "/www/plugin/" + name);
-		var b = sys.FileSystem.exists(App.config.PATH + "/lang/fr/tpl/plugin/" + name);
-		
-		return a && b;
-	}
-	
-	public function install() {
-		
-	
-	}
-	
 }
