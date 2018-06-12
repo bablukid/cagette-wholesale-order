@@ -67,7 +67,8 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 						var conf = who.db.WConfig.isActive(d.contract);
 						if ( conf != null){
 							
-							var products = who.db.WProductLink.getLinks(d.contract, conf.contract2, true);
+							var s = new who.service.WholesaleOrderService(d.contract);
+							var products = s.getLinks(true);
 							
 							var totalOrder =  function(p:db.Product){
 			

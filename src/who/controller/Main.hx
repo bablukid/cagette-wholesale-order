@@ -7,12 +7,16 @@ package who.controller;
 class Main extends controller.Controller
 {
 
+	
+
 	public function new() 
 	{
-		super();
-		
+		super();		
 	}
 	
+	/**
+	 *  check rights and prepare nav
+	 */
 	function init(c){
 		
 		if (!app.user.isContractManager(c)) throw Error("/", t._("Access forbidden") );
@@ -24,16 +28,24 @@ class Main extends controller.Controller
 
 	@logged @tpl("plugin/who/default.mtt")
 	public function doDefault(c:db.Contract){
-		var conf = who.db.WConfig.getOrCreate(c);
-		view.active = conf.active;
-		
 		init(c);
-		var now = Date.now();
-		view.distributions = db.Distribution.manager.search($contract==c && $orderEndDate < now && $date > now,false);
-		view.links = conf.contract2==null ? [] : who.db.WProductLink.getLinks(c,conf.contract2,true);
+		var s = new who.service.WholesaleOrderService(c);
+		
+		if(checkToken() && app.params.exists("toggle")){
+			if( connector.db.RemoteCatalog.getFromContract(c) ==null){
+				throw Error("/p/who/"+c.id,"Les commandes en gros ne sont possibles qu'avec les contrats Cagette Pro pour l'instant");
+			} 
+			s.conf.lock();
+			s.conf.active = !s.conf.active;
+			s.conf.update();
+		}
+		
+		view.active = s.conf.active;
+		view.distributions = s.getDistributions();
+		view.links = s.getLinks(true);
 	}
 	
-
+	/*
 	@logged @tpl("plugin/who/config.mtt")
 	public function doConfig(c:db.Contract){
 		
@@ -71,7 +83,7 @@ class Main extends controller.Controller
 		}
 		
 		view.form = f;
-	}
+	}*/
 	
 	/**
 	 * @deprecated
@@ -112,9 +124,9 @@ class Main extends controller.Controller
 		
 		init(d.contract);
 		
-		var conf = who.db.WConfig.getOrCreate(d.contract);
+		var s = new who.service.WholesaleOrderService(d.contract); 
 		
-		var products = who.db.WProductLink.getLinks(d.contract,conf.contract2,true);
+		var products = s.getLinks(true);
 		view.products = products;
 		view.d = d;
 		view.totalOrder = function(p:db.Product){
@@ -137,7 +149,8 @@ class Main extends controller.Controller
 		
 		if (checkToken()){
 			init(d.contract);
-			var d2 = who.db.WProductLink.confirm(d);
+			var s = new who.service.WholesaleOrderService(d.contract); 
+			var d2 = s.confirm(d);
 			
 			//if cpro contract
 			var msgPro = "";
@@ -153,9 +166,9 @@ class Main extends controller.Controller
 	@logged @tpl("plugin/who/detail.mtt")
 	public function doDetail(d:db.Distribution, p:db.Product){
 		
-		var conf = who.db.WConfig.getOrCreate(d.contract);		
-		var links = who.db.WProductLink.getLinks(d.contract,conf.contract2);
-		var retailToWholesale = who.db.WProductLink.linksAsMap(links);
+		var s = new who.service.WholesaleOrderService(d.contract); 
+		var links = s.getLinks();
+		var retailToWholesale = who.service.WholesaleOrderService.linksAsMap(links);
 		
 		init(d.contract);
 		

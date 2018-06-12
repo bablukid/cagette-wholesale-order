@@ -3,24 +3,19 @@
 	<h3>Commande en gros</h3>
 
 	<p>
-		Ce module permet de gérer une commande de produits au détail qui aboutira à une commande en gros.<br/>
-		Il faut constituer deux contrats : un contenant les produits en quantité "gros", un autre contenant les produits en quantité "détail".
-		Seul ce dernier est à la vente pour que les adhérents commandent au détail.<br/>
-		Ce module permettra de transformer cette commande en commande en gros en la transférant vers le deuxième contrat en gros.
+		Ce module permet de gérer une commande de produits au détail qui doit être convertie en commande en gros.<br/>
 		<b>Ne fonctionne pour l'instant qu'avec les contrats Cagette Pro</b>
 	</p>	
-	<hr/>
 
+	<hr/>
 	
 	<div class="text-center">
 	<p>
 		::if active::
-		Activé $$bool(::true::) 
+		<a href="/p/who/::c.id::?toggle=1&token=::token::" class="btn btn-default"><i class="fa fa-check" aria-hidden="true"></i> Activé</a>
 		::else::
-		Désactivé $$bool(::false::) 
+		<a href="/p/who/::c.id::?toggle=1&token=::token::" class="btn btn-default"><i class="fa fa-times disabled" aria-hidden="true"></i> Désactivé</a>
 		::end::
-		
-		<a href="/p/who/config/::c.id::" class="btn btn-default"><i class="fa fa-cog" aria-hidden="true"></i> Configurer</a>
 	</p>
 	</div>
 
@@ -59,7 +54,7 @@
 		<h4><i class="fa fa-link" aria-hidden="true"></i> Associations de produits</h4>
 		
 		::if links!=null && links.length>0::
-		<table class="table">
+		<table class="table table-striped table-bordered">
 			<tr>
 				<th>Détail</th>
 				<th></th>
