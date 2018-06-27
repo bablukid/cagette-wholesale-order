@@ -1,5 +1,6 @@
 package who.service;
 import who.db.WConfig;
+import tink.core.Error;
 
 /**
  *  Wholesale order service
@@ -20,10 +21,13 @@ class WholesaleOrderService {
 		conf.update();
 	}
 
-	public static function linksAsMap(arr:Array<{p1:db.Product,p2:db.Product}>){
+	/**
+	 *  Transforms an array of products couples to a map
+	 */
+	public static function linksAsMap(arr:Array<{p1:db.Product,p2:db.Product}>):Map<Int,db.Product>{
 		
 		var retailToWholesale = new Map();
-		for ( l in arr) retailToWholesale[l.p1.id] = l.p2;
+		for (l in arr) retailToWholesale[l.p1.id] = l.p2;
 		return retailToWholesale;
 	}
 
@@ -105,56 +109,78 @@ class WholesaleOrderService {
 
 
 	/**
-	 * Moves the distribution to the wholesale contract + update orders to wholesale products
+	 * Confirms order balancing : convert retail products orders to wholesale products orders
 	 */
 	public function confirm(d:db.Distribution){
 		
-		/*
-		var links = getLinks(d.contract, conf.contract2);
-		
-		//check same group ?
-		if ( conf.contract1.amap.id != conf.contract2.amap.id){
-			throw "Les deux contrats ne font pas partie du même groupe.";
-		}
-		
+		var links = getLinks(true);
 		var retailToWholesale = linksAsMap(links);
-		
-		var c1 = d.contract;
-		var c2 = conf.contract2;
-		
-		//moves distrib
-		d.lock();
-		d.contract = c2;
-		d.update();
-		
+		var orders = d.getOrders();
+
 		//update orders
-		for ( o in d.getOrders()){
+		// Sys.println("===CONFIRM===");
+		for ( o in orders){
 			
 			o.lock();
 			
 			if (retailToWholesale[o.product.id] == null){
-				//no linkage
+				//no change
 				continue;
 			}
 			
 			var qt1 = o.product.qt;
 			var qt2 = retailToWholesale[o.product.id].qt;
 			
-			//trace(o.quantity+" "+o.product.name+"<br/>");
+			// Sys.println(o.user.name+" : "+o.quantity+" x "+o.product.getName()+" ");
 			
 			o.product = retailToWholesale[o.product.id];
 			o.quantity *= (qt1 / qt2);
 			o.productPrice = o.product.price;
 			
-			//trace("Devient "+o.quantity+" "+o.product.name+"<br/>");
+			// Sys.println("devient "+o.quantity+" "+o.product.getName()+"\n");
+		}
+
+		// Sys.println("===TOTAL===");
+		//for( o in orders) Sys.println(o.user.getName()+" "+o.quantity+" "+o.product.getName()+"\n");
+
+		//check if the whole order is confirmable.
+		//simulate a summary  by products		
+		var check  = new Map<Int,Float>(); //product Id -> Qty
+		for ( o in orders){
 			
-			o.update();
+			var q = check.get(o.product.id);
+			if(q==null) q = 0.0;
+			q += o.quantity;
+			check.set(o.product.id, q );
 			
 		}
-		*/
+		// Sys.println("===TOTAL BY PRODUCT===");
+		for(k  in check.keys()){
+			var v = check.get(k);
+			var prod = db.Product.manager.get(k);
+			// Sys.println(prod.getName()+" x "+ v );
+
+			if(v!=Math.round(v)){
+				throw new Error("Balancing not possible : qt "+v+" of "+prod.getName()+" is not integer");
+			}
+		}
+
+		for( o in orders) o.update();
+
+		sendMailToMembers();
+		sendMailToManager();
+		
 		return d;
 		
-		
+	}
+
+
+	function sendMailToMembers(){
+
+	}
+
+	function sendMailToManager(){
+
 	}
 
 
