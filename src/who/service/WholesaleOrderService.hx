@@ -167,20 +167,23 @@ class WholesaleOrderService {
 
 		for( o in orders) o.update();
 
-		sendMailToMembers();
-		sendMailToManager();
+		sendMailToMembers(d);
+		sendMailToManager(d);
 		
+throw "stop";
+
 		return d;
 		
 	}
 
 
-	function sendMailToMembers(){
-
+	function sendMailToMembers(d:db.Distribution){
+		service.OrderService.sendOrderSummaryToMembers(d);
 	}
 
-	function sendMailToManager(){
 
+	function sendMailToManager(d:db.Distribution){
+		service.OrderService.sendOrdersByProductReport(d);
 	}
 
 
