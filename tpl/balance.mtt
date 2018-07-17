@@ -1,13 +1,11 @@
 ::use 'contractadmin/design.mtt'::
 	
-	<h3>Commande en gros : Ajustage de commande</h3>
-
+<h3>Ajustage de commande</h3>
 
 <p>
-	Distribution du ::hDate(d.date)::
-	
-	
+	Distribution du <b>::hDate(d.date)::</b>
 </p>
+
 
 	::set ok = true::
 	<p ::cond products!=null::>
@@ -15,8 +13,8 @@
 		<table class="table table-bordered">
 		<tr>
 			<th>Produit au détail</th>
-			<th>Gros</th>
-			<th>Commandé</th>
+			<th>Produit en gros</th>
+			<th>Qté commandée</th>
 			<th>Caisses entières</th>
 			<th>Manque</th>
 			
@@ -34,7 +32,7 @@
 				<img src="::p.p1.getImage()::" style="width:32px;height:32px;" />&nbsp;::p.p1.getName()::
 			</td>
 			<td>::p.p2.qt:: ::unit(p.p2._unitType,false)::</td>
-			<td>
+			<td class="text-center">
 				
 				::set qt = totalOrder(p.p1)*p.p1.qt::
 				::qt:: ::unit(p.p2._unitType,false)::
@@ -63,23 +61,46 @@
 		</table>
 		
 		<div class="text-center">
-			::if(ok)::
+			
 			<p>
-				En confirmant cette commande, vous allez tranformer cette commande au détail en commande en gros.
+				En confirmant cette commande, vous allez tranformer les commandes de vos adhérents.<br/>
+				<b>Les commandes de produits au détail</b> vont devenir des <b>fractions de produit en gros</b>.
 			</p>
 			<p>
+				::if(ok)::
 				<a href="/p/who/confirm/::d.id::/?token=::token::" class="btn btn-primary btn-lg">
 					<span class="glyphicon glyphicon-ok"></span>
 					Confirmer cette commande
 				</a>
-			</p>	
-			::end::
+				::else::
+				<div data-toggle="tooltip" title="Vous devez ajuster les quantités avant de pouvoir confirmer.">
+				<a href="#" class="btn btn-default btn-lg disabled" >
+					<span class="glyphicon glyphicon-ok"></span>
+					Confirmer cette commande
+				</a>
+				</div>
+				::end::
+			</p>
+
+			
 		</div>
 		
 	</p>
 
 	<p>
 		<a href="/p/who/::d._contract.id::" class="btn btn-default"><i class="fa fa-chevron-left" aria-hidden="true"></i> Retour</a>
+	</p>
+
+	<hr/>
+
+	<p>
+		L'objectif de l'ajustage est de modifer les commandes de vos adhérents afin d'obtenir un total de commande adapté à la commande en gros.
+	</p>
+	<p>
+		Si une case de la colonne "Manque" est rouge, vous devez cliquer sur "détail" afin d'ajuster la commande du produit concerné.
+	</p>
+	<p>
+		Cette page liste uniquement les commandes de produits au détail. <a href="/contractAdmin/orders/::d._contract.id::?d=::d.id::">Cliquez ici</a> pour voir l'ensemble des commandes de ce contrat.
 	</p>
 
 

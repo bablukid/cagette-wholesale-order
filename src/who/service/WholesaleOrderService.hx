@@ -74,6 +74,7 @@ class WholesaleOrderService {
 				var big = db.Product.getByRef(contract,bigOffer.ref);
 				if (little == null) throw new tink.core.Error("unable to find detail product with ref "+littleOffer.ref);
 				if (big == null) throw new tink.core.Error("unable to find wholesale product with ref "+bigOffer.ref);
+				if(excludeIdenticalProducts && little.id==big.id) continue;
 
 				//big products should have floatQt enabled ! Otherwise editing an order will round quantities
 				if (!bigOffer.product.hasFloatQt){
@@ -170,8 +171,6 @@ class WholesaleOrderService {
 		sendMailToMembers(d);
 		sendMailToManager(d);
 		
-throw "stop";
-
 		return d;
 		
 	}

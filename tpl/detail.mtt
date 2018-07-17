@@ -1,6 +1,6 @@
 ::use 'contractadmin/design.mtt'::
 	
-<h3>Commande en gros : Ajustage de commande</h3>
+<h3>Ajustage de commande</h3>
 <form>
 	
 	<input type="hidden" name="token" value="::token::" />
@@ -32,17 +32,13 @@
 					<td>
 						
 						<div class="input-group">
-						  <input type="number" name="u::o.userId::" value="::o.quantity::" class="form-control form-inline" />
+						  <input type="number" name="u::o.userId::" value="::o.quantity*o.productQt::" class="form-control form-inline" />
 						  <div class="input-group-addon">::unit(p1._unitType,false)::</div>
 						</div>
 						
 						
 					</td>
-					<!--<td>::o.productName::</td>
-					<td>				
-						<a href="/contractAdmin/edit/::d._contract.id::/::o.userId::?d=::d.id::" class="btn btn-default btn-xs" target="_blank">Modifier cette commande</a>
-					</td>-->
-					::set total = total + o.quantity::
+					::set total = total + (o.quantity*o.productQt)::
 				</tr>
 				::end::
 				

@@ -39,10 +39,28 @@ class Main extends controller.Controller
 			s.conf.active = !s.conf.active;
 			s.conf.update();
 		}
+
+		var links = s.getLinks(true);
+
+		if(app.params["action"]!=null){
+			var pids = [];
+			switch(app.params["action"]){
+				case "enableDetail", "disableDetail" : 
+				for(l in links) pids.push(l.p1.id);
+				case "enableWholesale", "disableWholesale" : 
+				for(l in links) pids.push(l.p2.id);
+				default : throw "unknown action";
+			}
+			switch(app.params["action"]){
+				case "enableDetail", "enableWholesale" : service.ProductService.batchEnableProducts(pids);
+				case "disableWholesale", "disableDetail" : service.ProductService.batchDisableProducts(pids);
+				default : throw "unknown action";
+			}	
+		}
 		
 		view.active = s.conf.active;
 		view.distributions = s.getDistributions();
-		view.links = s.getLinks(true);
+		view.links = links;
 	}
 	
 	/*
@@ -129,14 +147,24 @@ class Main extends controller.Controller
 		var products = s.getLinks(true);
 		view.products = products;
 		view.d = d;
-		view.totalOrder = function(p:db.Product){
+		var totalOrder = function(p:db.Product){
 			
 			var orders = db.UserContract.manager.search($distribution == d && $product == p, false);			
 			var tot = 0.0;
 			for ( o in orders ) tot += o.quantity;
 			return tot;
 			
+		};
+		view.totalOrder = totalOrder;
+
+		//check that the balancing is needed
+		var total = 0.0;
+		for(p in products){
+			total += totalOrder(p.p1);
 		}
+		if(total==0.0){
+			throw Ok("/contractAdmin/orders/"+d.contract.id+"?d="+d.id,"Vous n'avez pas besoin d'ajuster les quantités : il n'y a aucune commande de produit au détail, ou la commande a déjà été ajustée.");
+		} 
 		
 		checkToken();
 		
@@ -185,7 +213,8 @@ class Main extends controller.Controller
 				if (k.substr(0, 1) == "u"){
 					//trace('user '+k.substr(1)+' prend '+app.params.get(k));
 					var userId = Std.parseInt(k.substr(1));
-					var qt = Std.parseInt( app.params.get(k) );
+					var qt = Std.parseFloat( app.params.get(k) );
+					qt = qt / p.qt;
 					var o  = db.UserContract.manager.select($userId == userId && $product == p && $distribution == d, true);
 					db.UserContract.edit(o, qt);					
 				}

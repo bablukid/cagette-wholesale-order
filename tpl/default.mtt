@@ -62,22 +62,28 @@
 			</tr>
 			::foreach l links::
 			
-			::if(l.p1.ref==l.p2.ref) && l.p2!=null::
-			::set class="disabled"::
+			::if(!l.p1.active):: 
+			::set class1="disabled"::
 			::else::
-			::set class=""::
+			::set class1=""::
+			::end::
+
+			::if(!l.p2.active):: 
+			::set class2="disabled"::
+			::else::
+			::set class2=""::
 			::end::
 			
-			<tr class="::class::">
-				<td><img src="::l.p1.getImage()::" style="width:32px;height:32px;" />&nbsp;::l.p1.getName()::</td>
-				<td><i class="fa fa-arrow-right" aria-hidden="true"></i></td>
+			<tr >
+				<td class="::class1::">
+					<img src="::l.p1.getImage()::" style="width:32px;height:32px;" />
+					&nbsp;::l.p1.getName()::
+				</td>
 				<td>
-					::if(l.p2==null)::
-						$$check(::false::) Attention, ce produit n'a pas d'équivalent dans le contrat gros !
-					::else::
+					<i class="fa fa-arrow-right" aria-hidden="true"></i>
+				</td>
+				<td class="::class2::">
 					::l.p2.getName()::
-					::end::
-					
 				</td>
 			</tr>
 			::end::
@@ -89,6 +95,13 @@
 		::end::
 	</p>
 
+	<p class="text-center">
+		<a href="?action=disableDetail" class="btn btn-default"> <span class="glyphicon glyphicon-unchecked"></span> Désactiver tous les produits au détail</a>
+		<a href="?action=enableDetail" class="btn btn-default"> <span class="glyphicon glyphicon-check"></span> Activer tous les produits au détail</a>
+		<br/>
+		<a href="?action=disableWholesale" class="btn btn-default"> <span class="glyphicon glyphicon-unchecked"></span> Désactiver tous les produits en gros</a>
+		<a href="?action=enableWholesale" class="btn btn-default"> <span class="glyphicon glyphicon-check"></span> Activer tous les produits en gros</a>
+	</p>
 
 	
 	::end::
