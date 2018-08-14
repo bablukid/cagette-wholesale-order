@@ -45,12 +45,26 @@ class WholesaleOrderService {
 	 * 
 	 * @param excludeIdenticalProducts	Exclude links between 2 same products
 	 */
-	public function getLinks(?excludeIdenticalProducts = false ){
+	public function getLinks(?excludeIdenticalProducts = false ):Array<{p1:db.Product,p2:db.Product}>{
 
 		if(!conf.active) return [];
+		var out = [];
 		
 		var rc = connector.db.RemoteCatalog.getFromContract(contract);
 		if (rc == null) return [];
+
+		//get from cache
+		var cache : Array<{p1:Int,p2:Int}> = sugoi.db.Cache.get("wholesale_links_contract"+contract.id);
+		if(cache!=null){
+			for( c in cache){
+				out.push({
+					p1:db.Product.manager.get(c.p1,false),
+					p2:db.Product.manager.get(c.p2,false)
+				});
+			}
+			return out;
+		}
+
 
 		//populate a map by productId containing related offers
 		var catOffers = new Map<Int,Array<pro.db.POffer>>(); 
@@ -60,8 +74,6 @@ class WholesaleOrderService {
 			x.push(o.offer);
 			catOffers[o.offer.product.id] = x;
 		}
-		
-		var out = [];
 		
 		for (offers in catOffers ){
 			
@@ -88,6 +100,15 @@ class WholesaleOrderService {
 				out.push({p1:little,p2:big});
 			}
 		}
+
+
+		//save cache
+		if(cache==null){
+			var cache = [];
+			for(o in out) cache.push({p1:o.p1.id,p2:o.p2.id});
+			sugoi.db.Cache.set("wholesale_links_contract"+contract.id,cache,60*10); //store for 10 mn
+		}
+
 
 		return out;
 	}

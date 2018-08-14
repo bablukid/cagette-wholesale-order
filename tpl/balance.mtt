@@ -27,20 +27,20 @@
 		::set class=""::
 		::end::
 		
-		<tr class="::class::">
+		::set qt = totalOrder(p.p1)*p.p1.qt::
+
+		<tr class="::class::" ::cond qt>0::>
 			<td>
 				<img src="::p.p1.getImage()::" style="width:32px;height:32px;" />&nbsp;::p.p1.getName()::
 			</td>
-			<td>::p.p2.qt:: ::unit(p.p2._unitType,false)::</td>
+			<td>
+				::p.p2.qt:: ::unit(p.p2._unitType,false)::
+			</td>
 			<td class="text-center">
-				
-				::set qt = totalOrder(p.p1)*p.p1.qt::
 				::qt:: ::unit(p.p2._unitType,false)::
 			</td>
 			<th class="text-center">
-				
 				::Math.floor(qt/p.p2.qt)::
-				
 			</th>
 			
 			::set missing =  p.p2.qt - (qt % p.p2.qt)::			

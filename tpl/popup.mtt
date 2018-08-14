@@ -1,0 +1,59 @@
+
+::if manager::
+<p class="text-center">
+	<a href="/p/who/::d._contract.id::" class="btn btn-default btn-sm">
+		<span class="glyphicon glyphicon-th"></span> Coordinateur : Ajuster la commande
+	</a>
+</p>
+::end::
+
+<table class="table table-bordered table-condensed" style="background-color:#FFFFFF;">
+		<tr>
+			<th>Produit au détail</th>
+			<th>Produit en gros commandé à ::d._contract._vendor.name::</th>
+			<th>Quantité actuellement commandée</th>
+			<th>Nbre de Caisses entières</th>
+			<th>Manque&nbsp;:</th>
+			
+		</tr>
+		::if products!=null::
+		::foreach p products::
+		
+			::if(p.p1.ref==p.p2.ref)::
+				::set class="disabled"::
+			::else::
+				::set class=""::
+			::end::
+
+			::set qt = totalOrder(p.p1)*p.p1.qt::
+			
+			<tr class="::class::" ::cond qt>0::>
+				
+				<td>
+					<img src="::p.p1.getImage()::" style="width:32px;height:32px;" />&nbsp;::p.p1.name::&nbsp;::p.p1.qt::&nbsp;::unit(p.p1._unitType,false)::
+				</td>
+				<td>
+					::p.p2.qt::&nbsp;::unit(p.p2._unitType,false)::
+				</td>
+				<td>
+					
+					::qt::&nbsp;::unit(p.p2._unitType,false)::
+				</td>
+				<th class="text-center">
+					::Math.floor(qt/p.p2.qt)::
+				</th>
+				
+				::set missing =  p.p2.qt - (qt % p.p2.qt)::			
+				::if( (qt % p.p2.qt)==0 )::
+					<td class="success">
+						$$check(::true::)
+					0&nbsp;::unit(p.p2._unitType,false)::</td>
+				::else::
+					<td class="danger">
+						$$check(::false::)
+					::missing::&nbsp;::unit(p.p2._unitType,false)::</td>
+				::end::
+			</tr>
+		::end::
+		::end::	
+</table>

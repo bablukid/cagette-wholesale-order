@@ -1,61 +1,16 @@
-La distribution du <b>::hDate(d.date)::</b> contient des produits qui ne peuvent être commandés qu'en gros (caisses, cartons, sacs entiers). 
+La distribution du <b>::hDate(d.date)::</b> de <b>::d._contract._vendor.name::</b> contient des produits qui ne peuvent être commandés qu'en gros (caisses, cartons, sacs entiers). 
 Essayez d'ajuster votre commande en conséquence.
 <br/>
 
 
-::if manager::
 <p class="text-center">
-	<a href="/p/who/::d._contract.id::" class="btn btn-default btn-sm">Gérer la commande</a>
+	<a class="btn btn-default btn-sm" onclick="_.overlay('/p/who/popup/::d.id::','Commande en gros')">
+		<span class="glyphicon glyphicon-th"></span> Voir les produits concernés
+	</a>
 </p>
-::end::
 
-<table class="table table-bordered table-condensed" style="background-color:#FFFFFF;font-size: 12px;">
-		<tr>
-			<th><span data-toggle="tooltip" title="Produit que les adhérents commandent au détail">Détail</span></th>
-			<th><span data-toggle="tooltip" title="Produit en gros commandé au fournisseur">Gros</span></th>
-			<th><span data-toggle="tooltip" title="Nbre de produits actuellement commandés">Cmdé</span></th>
-			<th>Caisses entières</th>
-			<th>Manque</th>
-			
-		</tr>
-		::if products!=null::
-		::foreach p products::
-		
-			::if(p.p1.ref==p.p2.ref)::
-				::set class="disabled"::
-			::else::
-				::set class=""::
-			::end::
-			
-			<tr class="::class::">
-				
-				<td>
-					::p.p1.name::
-				</td>
-				<td>
-					::p.p2.qt::&nbsp;::unit(p.p2._unitType,false)::
-				</td>
-				<td>
-					
-					::set qt = totalOrder(p.p1)*p.p1.qt::
-					::qt::&nbsp;::unit(p.p2._unitType,false)::
-				</td>
-				<th class="text-center">
-					::Math.floor(qt/p.p2.qt)::
-				</th>
-				
-				::set missing =  p.p2.qt - (qt % p.p2.qt)::			
-				::if( (qt % p.p2.qt)==0 )::
-					<td class="success">$$check(::true::)
-					<br/>0&nbsp;::unit(p.p2._unitType,false)::</td>
-				::else::
-					<td class="danger">$$check(::false::)
-					<br/>::missing::&nbsp;::unit(p.p2._unitType,false)::</td>
-				::end::
-			</tr>
-		::end::
-		::end::	
-</table>
+
+
 
 <!--
 <table class="table table-bordered table-condensed" style="background-color:#FFFFFF;font-size: 12px;">

@@ -224,6 +224,31 @@ class Main extends controller.Controller
 			
 		}
 		
+	}
+
+	/**
+	 * information popup for members
+	 */
+	@logged @tpl("plugin/who/popup.mtt")
+	public function doPopup(d:db.Distribution){
+		
+		var s = new who.service.WholesaleOrderService(d.contract);
+		var products = s.getLinks(true);
+				
+		var totalOrder =  function(p:db.Product){
+
+			var orders = db.UserContract.manager.search($distribution == d && $product == p, false);			
+			var tot = 0.0;
+			for ( o in orders ) tot += o.quantity;
+			return tot;
+			
+		}
+
+		view.products = products;
+		view.d = d;
+		view.manager = app.user.isContractManager(d.contract);
+		view.totalOrder = totalOrder;
+
 	}	
 	
 	

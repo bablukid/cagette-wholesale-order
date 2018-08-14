@@ -54,39 +54,20 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 				}
 				
 			case Blocks(blocks, name):
-				if (name == "home"){
+				if (name == "home" /*|| name == "shop"*/ ){
 					
 					//find distributions with wholesale-order plugin activated
 					if (App.current.user == null || App.current.user.amap == null) return;
 					var now = Date.now();
 					var cids = db.Contract.getActiveContracts(App.current.user.amap);
-					
+					//distributions who are in between startDate and delivery date
 					var dists = db.Distribution.manager.search($orderStartDate <= now && $date >= now && $contractId in (tools.ObjectListTool.getIds(cids)), {orderBy:date}, false);
 					for (d in dists){
 						
 						var conf = who.db.WConfig.isActive(d.contract);
 						if ( conf != null){
-							
-							var s = new who.service.WholesaleOrderService(d.contract);
-							var products = s.getLinks(true);
-							
-							var totalOrder =  function(p:db.Product){
-			
-								var orders = db.UserContract.manager.search($distribution == d && $product == p, false);			
-								var tot = 0.0;
-								for ( o in orders ) tot += o.quantity;
-								return tot;
-								
-							}
-							
-							var html = App.current.processTemplate("plugin/who/block/home.mtt", {
-								d:d,
-								products:products,
-								manager:App.current.user.isContractManager(d.contract),
-								totalOrder:totalOrder,
-								unit:App.current.view.unit,
-								Math:Math
-							});
+						
+							var html = App.current.processTemplate("plugin/who/block/home.mtt", {d:d});
 							blocks.push( {id:"who",title:"Commandes en gros",html:html});
 						}
 						
