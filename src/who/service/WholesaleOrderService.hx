@@ -65,7 +65,6 @@ class WholesaleOrderService {
 			return out;
 		}
 
-
 		//populate a map by productId containing related offers
 		var catOffers = new Map<Int,Array<pro.db.POffer>>(); 
 		for( o in rc.getCatalog().getOffers()){
@@ -76,31 +75,32 @@ class WholesaleOrderService {
 		}
 		
 		for (offers in catOffers ){
-			
-			while(offers.length>1){
-				var bigOffer = getOfferWithHighestQuantity(offers);
-				var littleOffer = getOfferWithLowestQuantity(offers);
-				offers.remove(littleOffer);
-			
-				var little = db.Product.getByRef(contract,littleOffer.ref);
-				var big = db.Product.getByRef(contract,bigOffer.ref);
-				if (little == null) throw new tink.core.Error("unable to find detail product with ref "+littleOffer.ref);
-				if (big == null) throw new tink.core.Error("unable to find wholesale product with ref "+bigOffer.ref);
-				if(excludeIdenticalProducts && little.id==big.id) continue;
 
-				//big products should have floatQt enabled ! Otherwise editing an order will round quantities
-				if (!bigOffer.product.hasFloatQt){
-					bigOffer.product.lock();
-					bigOffer.product.hasFloatQt = true;
-					bigOffer.product.update();
-					var cat = rc.getCatalog();
-					cat.toSync();
-				}
+			var offers = sortOffersByQt(offers);
+
+			//find the big offer
+			var bigOffer = offers[0];
+			var big = db.Product.getByRef(contract,bigOffer.ref);
+			if (big == null) throw new tink.core.Error("unable to find wholesale product with ref "+bigOffer.ref);
+			offers.remove(bigOffer);
+
+			//big products should have floatQt enabled ! Otherwise editing an order will round quantities
+			if (!bigOffer.product.hasFloatQt){
+				bigOffer.product.lock();
+				bigOffer.product.hasFloatQt = true;
+				bigOffer.product.update();
+				var cat = rc.getCatalog();
+				cat.toSync();
+			}
 			
+			for ( off in offers ){
+				
+				var little = db.Product.getByRef(contract,off.ref);
+				if (little == null) throw new tink.core.Error("unable to find detail product with ref "+off.ref);
+				if(excludeIdenticalProducts && little.id==big.id) continue;
 				out.push({p1:little,p2:big});
 			}
 		}
-
 
 		//save cache
 		if(cache==null){
@@ -113,22 +113,14 @@ class WholesaleOrderService {
 		return out;
 	}
 
-	function getOfferWithLowestQuantity(offers:Array<pro.db.POffer>):pro.db.POffer{
-		var out : pro.db.POffer = null;
-		for( o in offers){
-			if(out==null || out.quantity>o.quantity) out = o; 
-		}
-		return out;
-	}
+	public function sortOffersByQt(offers:Array<pro.db.POffer>):Array<pro.db.POffer>{
+		//highest first
+		offers.sort(function(x,y){
+			return Math.round(y.quantity - x.quantity);
+		});
 
-	function getOfferWithHighestQuantity(offers:Array<pro.db.POffer>):pro.db.POffer{
-		var out : pro.db.POffer = null;
-		for( o in offers){
-			if(out==null || out.quantity<o.quantity) out = o; 
-		}
-		return out;
+		return offers;
 	}
-
 
 	/**
 	 * Confirms order balancing : convert retail products orders to wholesale products orders
@@ -176,6 +168,7 @@ class WholesaleOrderService {
 			check.set(o.product.id, q );
 			
 		}
+		
 		// Sys.println("===TOTAL BY PRODUCT===");
 		for(k  in check.keys()){
 			var v = check.get(k);
@@ -183,7 +176,7 @@ class WholesaleOrderService {
 			// Sys.println(prod.getName()+" x "+ v );
 
 			if(v!=Math.round(v)){
-				throw new Error("Balancing not possible : qt "+v+" of "+prod.getName()+" is not integer");
+				throw new Error("Balancing not possible : quantity "+v+" of "+prod.getName()+" should be integer");
 			}
 		}
 

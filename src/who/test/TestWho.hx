@@ -8,25 +8,27 @@ import pro.service.PProductService;
  */
 class TestWho extends haxe.unit.TestCase
 {
-	
-
 	public function new(){
 		super();
 	}
-	
+
+	/**
+		run before each test
+	**/
 	override function setup(){
 
 		//restore initial state
 		test.TestSuite.initDB();
 		test.TestSuite.initDatas();
+
 		//add Cpro datas
 		pro.test.ProTestSuite.initDB();
 		pro.test.ProTestSuite.initDatas();
 
 		test.TestSuite.createTable(who.db.WConfig.manager);
 
-		//product Lemon in 3 qt : 1kg, 5kg, 10kg
-		var lemon = PProductService.make("Citron",Kilogram,"CIT",pro.test.ProTestSuite.COMPANY);
+		//product Lemon with 3 offers : 1kg, 5kg, 10kg
+		var lemon = PProductService.make("Lemon",Kilogram,"CIT",pro.test.ProTestSuite.COMPANY);
 		for( qt in [1,5,10] ){
 			var off = PProductService.makeOffer(lemon,qt,"CIT-"+qt);
 			PProductService.makeCatalogOffer(off,pro.test.ProTestSuite.CATALOG1,1);			
@@ -44,27 +46,51 @@ class TestWho extends haxe.unit.TestCase
 	}
 
 	function testProductLinks(){
+
 		
 		var rcs = connector.db.RemoteCatalog.getFromCatalog(pro.test.ProTestSuite.CATALOG1);
 		var contract = rcs.first().getContract();
-		
+
 		//we got a contract with 4 products
 		assertTrue( contract!=null );
 		assertTrue( contract.getProducts().length == 4 );
+
+		//check products ref
+		var lemon1 = db.Product.getByRef(contract,"CIT-1");
+		var lemon5 = db.Product.getByRef(contract,"CIT-5");
+		var lemon10 = db.Product.getByRef(contract,"CIT-10");
+		var tomato = db.Product.getByRef(contract,"TOM-1");
+		assertEquals(lemon1.contract.id,contract.id);
+		assertEquals(lemon5.contract.id,contract.id);
+		assertEquals(lemon10.contract.id,contract.id);
+		assertEquals(tomato.contract.id,contract.id);
+		assertEquals(lemon1.getName(),"Lemon 1 Kg.");
+		assertEquals(lemon10.getName(),"Lemon 10 Kg.");
 		
+		//check cache is empty
+		assertTrue( sugoi.db.Cache.manager.count(true)==0 );
+
 		var s = new who.service.WholesaleOrderService(contract);
+
+		var offs = s.sortOffersByQt(Lambda.array(pro.db.PProduct.getByRef("CIT",pro.test.ProTestSuite.CATALOG1.company).getOffers(false)));
+		assertEquals(offs[0].quantity,10); //first should be Lemon 10kg.
+		assertEquals(offs[1].quantity,5);
+		assertEquals(offs[2].quantity,1);
+
 		var links = s.getLinks();
+
+		// trace(links);
 
 		//links should list only lemons
 		assertTrue( links!=null );
 		assertTrue( links.length == 2 );
 
-		//Lemon 1kg -> Lemon 10kg
-		assertTrue( links[0].p1.qt == 1 );
+		//Lemon 5kg -> Lemon 10kg
+		assertTrue( links[0].p1.qt == 5 ); //
 		assertTrue( links[0].p2.qt == 10 );
 		
-		//Lemon 5kg -> Lemon 10kg
-		assertTrue( links[1].p1.qt == 5 );
+		//Lemon 1kg -> Lemon 10kg
+		assertTrue( links[1].p1.qt == 1 );
 		assertTrue( links[1].p2.qt == 10 );
 	}
 
@@ -95,6 +121,7 @@ class TestWho extends haxe.unit.TestCase
 		var lemon5 = db.Product.getByRef(contract,"CIT-5");
 		var lemon10 = db.Product.getByRef(contract,"CIT-10");
 		var tomato = db.Product.getByRef(contract,"TOM-1");
+
 		//SEB 2kg lemon
 		db.UserContract.make(test.TestSuite.SEB,2,lemon1,d.id);
 		//FRA 5kg lemon + 5kg tomato
@@ -103,14 +130,18 @@ class TestWho extends haxe.unit.TestCase
 		//JULIE 10kg Lemon + 1kg tomato
 		db.UserContract.make(test.TestSuite.JULIE,1,lemon10,d.id);
 		db.UserContract.make(test.TestSuite.JULIE,1,tomato,d.id);
+		//TOTAL 17kg Lemon + 6kg Tomato
 
 		//we should not be able to confirm the order balancing
+		// because 17 is not a multiple of 10.
 		var error = null;
 		try{
 			s.confirm(d);
 		}catch(e:tink.core.Error){
 			error = e;
 		}
+		// if(error!=null) trace(error);
+
 		assertTrue(error!=null);
 
 	}
