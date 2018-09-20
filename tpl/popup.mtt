@@ -10,7 +10,7 @@
 <table class="table table-bordered table-condensed" style="background-color:#FFFFFF;">
 		<tr>
 			<th>Produit au détail</th>
-			<th>Produit en gros commandé à ::d._contract._vendor.name::</th>
+			<th>Produit en gros à commander à ::d._contract._vendor.name::</th>
 			<th>Quantité actuellement commandée</th>
 			<th>Nbre de Caisses entières</th>
 			<th>Manque&nbsp;:</th>

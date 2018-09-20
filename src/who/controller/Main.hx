@@ -200,15 +200,14 @@ class Main extends controller.Controller
 		
 		init(d.contract);
 		
-		view.orders = db.UserContract.prepare( db.UserContract.manager.search($distribution == d && $product == p, false) );
+		view.orders = service.OrderService.prepare( db.UserContract.manager.search($distribution == d && $product == p, false) );
 		view.p1 = p;
 		view.p2 = retailToWholesale[p.id];
 		view.d = d;
 		
 		//update quantities
 		if (checkToken()){
-			//{u10748 => 4, u1 => 2, token => b49d318e22952b2454c1f92e05d1078a}
-			
+			//params are like : {u10748 => 4, u1 => 2, token => b49d318e22952b2454c1f92e05d1078a}
 			for (k in app.params.keys() ){
 				if (k.substr(0, 1) == "u"){
 					//trace('user '+k.substr(1)+' prend '+app.params.get(k));
@@ -216,7 +215,7 @@ class Main extends controller.Controller
 					var qt = Std.parseFloat( app.params.get(k) );
 					qt = qt / p.qt;
 					var o  = db.UserContract.manager.select($userId == userId && $product == p && $distribution == d, true);
-					db.UserContract.edit(o, qt);					
+					service.OrderService.edit(o, qt);					
 				}
 			}
 			

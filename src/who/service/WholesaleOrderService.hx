@@ -1,6 +1,7 @@
 package who.service;
 import who.db.WConfig;
 import tink.core.Error;
+import service.OrderService;
 
 /**
  *  Wholesale order service
@@ -84,10 +85,11 @@ class WholesaleOrderService {
 			if (big == null) throw new tink.core.Error("unable to find wholesale product with ref "+bigOffer.ref);
 			offers.remove(bigOffer);
 
-			//big products should have floatQt enabled ! Otherwise editing an order will round quantities
-			if (!bigOffer.product.hasFloatQt){
+			//big products should have wholesale enabled ! Otherwise editing an order will round quantities
+			if (!bigOffer.product.wholesale){
 				bigOffer.product.lock();
-				bigOffer.product.hasFloatQt = true;
+				bigOffer.product.hasFloatQt = false;
+				bigOffer.product.wholesale = true;
 				bigOffer.product.update();
 				var cat = rc.getCatalog();
 				cat.toSync();
@@ -130,28 +132,26 @@ class WholesaleOrderService {
 		var links = getLinks(true);
 		var retailToWholesale = linksAsMap(links);
 		var orders = d.getOrders();
+		var newOrders = [];
 
 		//update orders
-		// Sys.println("===CONFIRM===");
 		for ( o in orders){
-			
-			o.lock();
 			
 			if (retailToWholesale[o.product.id] == null){
 				//no change
 				continue;
 			}
-			
+
 			var qt1 = o.product.qt;
 			var qt2 = retailToWholesale[o.product.id].qt;
-			
-			// Sys.println(o.user.name+" : "+o.quantity+" x "+o.product.getName()+" ");
-			
-			o.product = retailToWholesale[o.product.id];
-			o.quantity *= (qt1 / qt2);
-			o.productPrice = o.product.price;
-			
-			// Sys.println("devient "+o.quantity+" "+o.product.getName()+"\n");
+			var qt = o.quantity * (qt1 / qt2);
+			//o.productPrice = o.product.price;
+
+			var newOrder = OrderService.make(o.user, qt, retailToWholesale[o.product.id],d.id,null,o.user2,null);
+			if(newOrder!=null){
+				newOrders.push(newOrder);
+				o.delete();
+			}
 		}
 
 		// Sys.println("===TOTAL===");
@@ -159,28 +159,37 @@ class WholesaleOrderService {
 
 		//check if the whole order is confirmable.
 		//simulate a summary  by products		
-		var check  = new Map<Int,Float>(); //product Id -> Qty
+		/*var check  = new Map<Int,Float>(); //product Id -> Qty
 		for ( o in orders){
-			
 			var q = check.get(o.product.id);
 			if(q==null) q = 0.0;
 			q += o.quantity;
 			check.set(o.product.id, q );
-			
 		}
-		
-		// Sys.println("===TOTAL BY PRODUCT===");
+
+		//check if Balancing is possible : quantities should be integers		
 		for(k  in check.keys()){
 			var v = check.get(k);
 			var prod = db.Product.manager.get(k);
-			// Sys.println(prod.getName()+" x "+ v );
-
 			if(v!=Math.round(v)){
+				//changes won't be commited thanks to MySQL Transactions
 				throw new Error("Balancing not possible : quantity "+v+" of "+prod.getName()+" should be integer");
 			}
-		}
+		}*/
+		var total = OrderService.getOrdersByProduct({distribution:d});
+		//trace(total);
 
-		for( o in orders) o.update();
+		for( t in total ){
+			//do not check products wich are not detail products
+			if ( Lambda.find(links,function(el) return el.p2.id == t.pid)==null ){
+				continue;
+			}
+			if( !tools.FloatTool.isEqual(t.quantity , Math.round(t.quantity) ) ){
+				//changes won't be commited thanks to MySQL Transactions				
+				throw new Error('Balancing not possible : quantity ${t.quantity} of "${t.pname}" should be integer. ( ${t.quantity} != ${Math.round(t.quantity)} )');
+			}
+
+		}
 
 		sendMailToMembers(d);
 		sendMailToManager(d);

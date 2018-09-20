@@ -29,6 +29,8 @@ class TestWho extends haxe.unit.TestCase
 
 		//product Lemon with 3 offers : 1kg, 5kg, 10kg
 		var lemon = PProductService.make("Lemon",Kilogram,"CIT",pro.test.ProTestSuite.COMPANY);
+		lemon.wholesale = true;
+		lemon.update();
 		for( qt in [1,5,10] ){
 			var off = PProductService.makeOffer(lemon,qt,"CIT-"+qt);
 			PProductService.makeCatalogOffer(off,pro.test.ProTestSuite.CATALOG1,1);			
@@ -123,13 +125,13 @@ class TestWho extends haxe.unit.TestCase
 		var tomato = db.Product.getByRef(contract,"TOM-1");
 
 		//SEB 2kg lemon
-		db.UserContract.make(test.TestSuite.SEB,2,lemon1,d.id);
+		service.OrderService.make(test.TestSuite.SEB,2,lemon1,d.id);
 		//FRA 5kg lemon + 5kg tomato
-		db.UserContract.make(test.TestSuite.FRANCOIS,1,lemon5,d.id);
-		db.UserContract.make(test.TestSuite.FRANCOIS,5,tomato,d.id);
+		service.OrderService.make(test.TestSuite.FRANCOIS,1,lemon5,d.id);
+		service.OrderService.make(test.TestSuite.FRANCOIS,5,tomato,d.id);
 		//JULIE 10kg Lemon + 1kg tomato
-		db.UserContract.make(test.TestSuite.JULIE,1,lemon10,d.id);
-		db.UserContract.make(test.TestSuite.JULIE,1,tomato,d.id);
+		service.OrderService.make(test.TestSuite.JULIE,1,lemon10,d.id);
+		service.OrderService.make(test.TestSuite.JULIE,1,tomato,d.id);
 		//TOTAL 17kg Lemon + 6kg Tomato
 
 		//we should not be able to confirm the order balancing
@@ -146,7 +148,9 @@ class TestWho extends haxe.unit.TestCase
 
 	}
 	
-
+	/**
+	Test orders balancing
+	**/
 	function testConfirm(){
 
 		var rcs = connector.db.RemoteCatalog.getFromCatalog(pro.test.ProTestSuite.CATALOG1);
@@ -175,30 +179,38 @@ class TestWho extends haxe.unit.TestCase
 		var lemon10 = db.Product.getByRef(contract,"CIT-10");
 		var tomato = db.Product.getByRef(contract,"TOM-1");
 
-		//SEB 2kg lemon
-		db.UserContract.make(test.TestSuite.SEB,2,lemon1,d.id);
+		//SEB 2+10kg lemon
+		service.OrderService.make(test.TestSuite.SEB,2,lemon1,d.id);
+		service.OrderService.make(test.TestSuite.SEB,1,lemon10,d.id);
 		//FRA 5kg lemon + 5kg tomato
-		db.UserContract.make(test.TestSuite.FRANCOIS,1,lemon5,d.id);
-		db.UserContract.make(test.TestSuite.FRANCOIS,5,tomato,d.id);
+		service.OrderService.make(test.TestSuite.FRANCOIS,1,lemon5,d.id);
+		service.OrderService.make(test.TestSuite.FRANCOIS,5,tomato,d.id);
 		//JULIE 10kg Lemon + 1kg tomato
-		db.UserContract.make(test.TestSuite.JULIE,1,lemon10,d.id);
-		db.UserContract.make(test.TestSuite.JULIE,1,tomato,d.id);
+		service.OrderService.make(test.TestSuite.JULIE,1,lemon10,d.id);
+		service.OrderService.make(test.TestSuite.JULIE,1,tomato,d.id);
 
-		//do balancing
-		var uo = db.UserContract.make(test.TestSuite.SEB,3,lemon1,d.id);
+		//SEB +3kg lemon
+		var uo = service.OrderService.make(test.TestSuite.SEB,3,lemon1,d.id);
 		assertEquals(5.0,uo.quantity); //seb should have now 5 x lemon 1kg
+		
+		//do balancing
 		s.confirm(d);
 
-		/*we should get :
-		2 x 10kg lemon
+		/*get total by products, we should get :
+		3 x 10kg lemon
 		6 x 1kg tomato
 		*/
-		var summary = db.UserContract.getOrdersByProduct({distribution:d});
+		var summary = service.OrderService.getOrdersByProduct({distribution:d});
 		assertEquals(summary.length,2);
 		var slemon = Lambda.find(summary,function(x) return x.pid == lemon10.id);
-		assertEquals(2.0,slemon.quantity);
+		assertEquals(3.0,slemon.quantity);
 		var stomato = Lambda.find(summary,function(x) return x.pid == tomato.id);
 		assertEquals(6.0,stomato.quantity);
+
+		//check bug of non-aggregation of order lines for the same user after balancing		
+		var uo = test.TestSuite.SEB.getOrdersFromDistrib(d);
+		assertEquals(1,uo.length);
+
 
 
 	}

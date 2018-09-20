@@ -86,6 +86,15 @@
 					::l.p2.getName()::
 				</td>
 			</tr>
+			
+			::if( numClean(l.p1.price/l.p1.qt) != numClean(l.p2.price/l.p2.qt) )::
+			<tr class="danger"><td colspan="3">
+				<b>Attention : </b> 
+				Le prix au ::unit(l.p1._unitType,null):: 
+				est de <b>::raw pricePerUnit(l.p1.price,l.p1.qt,l.p1._unitType)::</b> au détail 
+				et de <b>::raw pricePerUnit(l.p2.price,l.p2.qt,l.p2._unitType)::</b> en gros
+			</td></tr>
+			::end::
 			::end::
 		</table>
 		::else::
