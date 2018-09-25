@@ -53,8 +53,8 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 					Sys.sleep(0.25);
 				}
 				
-			case Blocks(blocks, name):
-				if (name == "home" /*|| name == "shop"*/ ){
+			/*case Blocks(blocks, name):
+				if (name == "home" ){
 					
 					//find distributions with wholesale-order plugin activated
 					if (App.current.user == null || App.current.user.amap == null) return;
@@ -72,7 +72,57 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 						}
 						
 					}
-				}					
+				}		*/			
+			
+
+			case MultiDistribEvent(md):
+				// display a button on the homepage
+				if (App.current.user == null || App.current.user.amap == null) return;
+				for (d in md.distributions){						
+					var conf = who.db.WConfig.isActive(d.contract);
+					if ( conf != null){
+						md.actions.push({id:"who",link:"javascript:_.overlay('/p/who/popup/"+d.id+"','Commande en gros')",name:"Commande en gros",icon:"th"});
+					}
+						
+				}
+
+			case ProductInfosEvent(productInfos,distribution) :
+
+				//display a block in product infos popup
+				if(distribution==null) return null;
+				var c = db.Contract.manager.get(productInfos.contractId,false);
+				var conf = who.db.WConfig.isActive(c);
+				if ( conf != null){
+					if(productInfos.desc==null) productInfos.desc = "";
+
+					var s = new who.service.WholesaleOrderService(c);
+					var balanceInfos = null;
+					for ( link in s.getLinks(true)){
+						if(link.p1.id == productInfos.id){
+							balanceInfos = link;
+							break;
+						}
+					}
+					if(balanceInfos==null) return null;
+					
+					var totalOrder =  function(p:db.Product){
+						var orders = db.UserContract.manager.search($distribution == distribution && $product == p, false);			
+						var tot = 0.0;
+						for ( o in orders ) tot += o.quantity;
+						return tot;
+					}
+
+					var html = App.current.processTemplate("plugin/who/block/productInfos.mtt",{
+						products:[balanceInfos],
+						d:distribution,
+						totalOrder:totalOrder,
+						unit:App.current.view.unit,
+						Math:Math
+					});
+
+
+					productInfos.desc += "<br/><hr/>"+html;
+				}
 			
 		
 			default :

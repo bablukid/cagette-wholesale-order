@@ -1,3 +1,8 @@
+<p>
+	Cette distribution contient des produits qui ne peuvent être commandés qu'en gros (caisses, cartons, sacs entiers).<br/>
+	Essayez d'ajuster votre commande en conséquence.
+</p>
+
 
 ::if manager::
 <p class="text-center">
