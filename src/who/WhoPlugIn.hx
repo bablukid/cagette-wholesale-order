@@ -81,7 +81,31 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 				for (d in md.distributions){						
 					var conf = who.db.WConfig.isActive(d.contract);
 					if ( conf != null){
-						md.actions.push({id:"who",link:"javascript:_.overlay('/p/who/popup/"+d.id+"','Commande en gros')",name:"Commande en gros",icon:"th"});
+						//md.actions.push({id:"who",link:"javascript:_.overlay('/p/who/popup/"+d.id+"','Commande en gros')",name:"Commande en gros",icon:"th"});
+
+						var s = new who.service.WholesaleOrderService(d.contract);
+						var products = s.getLinks(true);
+										
+						var totalOrder =  function(p:db.Product){
+							var orders = db.UserContract.manager.search($distribution == d && $product == p, false);			
+							var tot = 0.0;
+							for ( o in orders ) tot += o.quantity;
+							return tot;
+						}
+
+						var params : Dynamic = {};
+						params.products = products;
+						params.d = d;
+						params.manager = App.current.user.isContractManager(d.contract);
+						params.totalOrder = totalOrder;
+						params.Math = Math;
+						params.unit = App.current.view.unit;
+						params.now = Date.now();
+
+
+						var html = App.current.processTemplate("plugin/who/block/home.mtt", params);
+						md.extraHtml += html;
+										
 					}
 						
 				}

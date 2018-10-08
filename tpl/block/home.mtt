@@ -1,20 +1,34 @@
-La distribution du <b>::hDate(d.date)::</b> de <b>::d._contract._vendor.name::</b> contient des produits qui ne peuvent être commandés qu'en gros (caisses, cartons, sacs entiers). 
+<!--La distribution du <b>::hDate(d.date)::</b> de <b>::d._contract._vendor.name::</b> contient des produits qui ne peuvent être commandés qu'en gros (caisses, cartons, sacs entiers). 
 Essayez d'ajuster votre commande en conséquence.
 <br/>
-
-
 <p class="text-center">
 	<a class="btn btn-default btn-sm" onclick="_.overlay('/p/who/popup/::d.id::','Commande en gros')">
 		<span class="glyphicon glyphicon-th"></span> Voir les produits concernés
 	</a>
+</p>-->
+
+
+
+::set needBalancing = false::
+::set isBalanced = true::
+
+::foreach p products::
+	::set qt = totalOrder(p.p1)*p.p1.qt::
+	::if(qt>0)::
+		::set isBalanced = false::
+	::end::
+::end::
+
+::set displayInfos = products.length>0 && (!isBalanced || now.getTime() < d.orderEndDate.getTime() )::
+<hr ::cond displayInfos:: />
+<p ::cond displayInfos::>
+	<b>Mission Caisses entières !</b> Certains produits font l'objet d'une <b>commande en gros</b>.<br/>
+	Essayez d'ajuster votre commande pour obtenir des caisses entières.
 </p>
 
 
 
-
-<!--
-<table class="table table-bordered table-condensed" style="background-color:#FFFFFF;font-size: 12px;">
-	
+<!--<table class="table table-bordered table-condensed" style="background-color:#FFFFFF;">
 		::foreach p products::
 		<tr class="::class::">
 			<td>
@@ -24,17 +38,83 @@ Essayez d'ajuster votre commande en conséquence.
 			::set missing =  p.p2.qt - (qt % p.p2.qt)::
 			
 			::if(qt==0)::
-				<td class="success">$$check(::true::) 0 ::unit(p.p2._unitType)::</td>
+				<td class="success">$$check(::true::) 0 ::unit(p.p2._unitType,false)::</td>
 			::elseif( (qt % p.p2.qt)==0 )::
 				<td class="success">$$check(::true::) 
-				<b>::Math.floor(qt/p.p2.qt)::</b> caisse(s) entière(s) de ::p.p2.qt:: ::unit(p.p2._unitType)::</td>
+				<b>::Math.floor(qt/p.p2.qt)::</b> caisse(s) entière(s) de ::p.p2.qt:: ::unit(p.p2._unitType,false)::</td>
 			::else::
 				<td class="danger">$$check(::false::)
-				Manque <b>::missing::&nbsp;::unit(p.p2._unitType)::</b> pour avoir <b>::Math.floor(qt/p.p2.qt)+1::</b> caisse(s) entière(s)</td>
+				Manque <b>::missing::&nbsp;::unit(p.p2._unitType,false)::</b> 
+				pour avoir <b>::Math.floor(qt/p.p2.qt)+1::</b> caisse(s) entière(s)</td>
+				::set needBalancing = true::
+			::end::
+		</tr>
+		::end::	
+</table>-->
+
+
+<table class="table table-bordered table-condensed" style="background-color:#FFFFFF;font-size:95%;" ::cond displayInfos::>
+		<tr>
+			<th>Produit au détail</th>
+			<th>Produit en gros</th>
+			<th>Total commandé</th>
+			<th>Caisses entières</th>
+			
+			
+		</tr>
+		::foreach p products::
+		
+		::set qt = totalOrder(p.p1)*p.p1.qt::
+
+		<tr class="::class::">
+			<td class="text-left">
+				<!-- <img src="::p.p1.getImage()::" style="width:28px;height:28px;" />&nbsp;-->
+				::p.p1.getName()::
+			</td>
+			<td class="text-center">
+				::p.p2.qt:: ::unit(p.p2._unitType,false)::
+			</td>
+			<td class="text-center">
+				::qt:: ::unit(p.p2._unitType,false)::
+			</td>
+			<th class="text-center">
+				::Math.floor(qt/p.p2.qt)::
+			</th>
+			
+			::set missing =  p.p2.qt - (qt % p.p2.qt)::	
+			
+			::if( (qt % p.p2.qt)==0 )::
+				<td class="success text-center">$$check(::true::)</td>
+			::else::
+				<td class="danger text-center">$$check(::false::) Manque ::missing:: ::unit(p.p2._unitType,false)::</td>
+				::set needBalancing = true::
 			::end::
 				
-
+			
+	
 		</tr>
 		
 		::end::	
-</table>-->
+		</table>
+
+
+
+::if manager::
+<p class="text-center">
+	::if now.getTime() > d.orderEndDate.getTime() && now.getTime() < d.date.getTime()::
+		::if isBalanced::
+		<div class="alert-success" style="width:80%;padding: 8px;margin:auto;">
+				<span class="glyphicon glyphicon-ok"></span> Commmande en gros ajustée !
+		</div>
+		::else::
+		<a href="/p/who/::d._contract.id::" class="btn btn-primary">
+			<span class="glyphicon glyphicon-th"></span> Coordinateur : Ajustez la commande en gros
+		</a>
+		::end::
+	::else::
+		<a href="/p/who/::d._contract.id::" class="btn btn-default btn-xs">
+			<span class="glyphicon glyphicon-cog"></span> Coordinateur :  Options de commande en gros
+		</a>
+	::end::
+</p>
+::end::

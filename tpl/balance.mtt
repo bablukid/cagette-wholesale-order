@@ -16,7 +16,7 @@
 			<th>Produit en gros</th>
 			<th>Qté commandée</th>
 			<th>Caisses entières</th>
-			<th>Manque</th>
+			
 			
 		</tr>
 		::foreach p products::
@@ -43,16 +43,17 @@
 				::Math.floor(qt/p.p2.qt)::
 			</th>
 			
-			::set missing =  p.p2.qt - (qt % p.p2.qt)::			
+			::set missing =  p.p2.qt - (qt % p.p2.qt)::	
+			
 			::if( (qt % p.p2.qt)==0 )::
-				<td class="success">$$check(::true::) 0 ::unit(p.p2._unitType,false)::</td>
+				<td class="success text-center">$$check(::true::)</td>
 			::else::
-				<td class="danger">$$check(::false::) ::missing:: ::unit(p.p2._unitType,false)::</td>
+				<td class="danger text-center">$$check(::false::) Manque ::missing:: ::unit(p.p2._unitType,false)::</td>
 				::set ok = false::
 			::end::
 				
 			<td>
-				<a href="/p/who/detail/::d.id::/::p.p1.id::" class="btn btn-default btn-sm">Détail</a>
+				<a href="/p/who/detail/::d.id::/::p.p1.id::" class="btn btn-default btn-sm">Ajuster</a>
 			</td>
 			
 		</tr>
@@ -94,13 +95,13 @@
 	<hr/>
 
 	<p>
-		L'objectif de l'ajustage est de modifer les commandes de vos adhérents afin d'obtenir un total de commande adapté à la commande en gros.
+		L'objectif de l'ajustage est de modifier les commandes de vos adhérents afin d'obtenir un total de commande adapté à la commande en gros.
 	</p>
 	<p>
-		Si une case de la colonne "Manque" est rouge, vous devez cliquer sur "détail" afin d'ajuster la commande du produit concerné.
+		Si une case est rouge, vous devez cliquer sur "Ajuster" afin d'ajuster la commande du produit concerné.
 	</p>
 	<p>
-		Cette page liste uniquement les commandes de produits au détail. <a href="/contractAdmin/orders/::d._contract.id::?d=::d.id::">Cliquez ici</a> pour voir l'ensemble des commandes de ce contrat.
+		Cette page liste uniquement les commandes de produits concernés par la commande en gros. <a href="/contractAdmin/orders/::d._contract.id::?d=::d.id::">Cliquez ici</a> pour voir l'ensemble des commandes de ce contrat.
 	</p>
 
 
