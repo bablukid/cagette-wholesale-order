@@ -143,29 +143,20 @@ class Main extends controller.Controller
 		init(d.contract);
 		
 		var s = new who.service.WholesaleOrderService(d.contract); 
-		
 		var products = s.getLinks(true);
-		view.products = products;
-		view.d = d;
-		var totalOrder = function(p:db.Product){
-			
-			var orders = db.UserContract.manager.search($distribution == d && $product == p, false);			
-			var tot = 0.0;
-			for ( o in orders ) tot += o.quantity;
-			return tot;
-			
-		};
-		view.totalOrder = totalOrder;
+		var balancing = s.getBalancingSummary(d);
 
 		//check that the balancing is needed
 		var total = 0.0;
 		for(p in products){
-			total += totalOrder(p.p1);
+			total += s.totalOrder(p.p1,d);
 		}
 		if(total==0.0){
 			throw Ok("/contractAdmin/orders/"+d.contract.id+"?d="+d.id,"Vous n'avez pas besoin d'ajuster les quantités : il n'y a aucune commande de produit au détail, ou la commande a déjà été ajustée.");
 		} 
-		
+
+		view.balancing = balancing;
+		view.d = d;		
 		checkToken();
 		
 	}
@@ -195,15 +186,14 @@ class Main extends controller.Controller
 	public function doDetail(d:db.Distribution, p:db.Product){
 		
 		var s = new who.service.WholesaleOrderService(d.contract); 
-		var links = s.getLinks();
-		var retailToWholesale = who.service.WholesaleOrderService.linksAsMap(links);
+		//var links = s.getLinks();
+		//var retailToWholesale = who.service.WholesaleOrderService.linksAsMap(links);
 		
 		init(d.contract);
 		
 		view.orders = service.OrderService.prepare( db.UserContract.manager.search($distribution == d && $product == p, false) );
-		view.p1 = p;
-		view.p2 = retailToWholesale[p.id];
 		view.d = d;
+		view.balancing = s.getBalancingSummary(d,p);
 		
 		//update quantities
 		if (checkToken()){

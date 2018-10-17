@@ -4,16 +4,17 @@
 <form>
 	
 	<input type="hidden" name="token" value="::token::" />
-	
+	::set b = balancing[0]::
+
 	<div class="row">
 		
 		<div class="col-md-4 text-center">
 			<br/>
 			<br/>
-			<img src="::p1.getImage()::" style="width:64px;height:64px;" />
+			<img src="::b.retail.getImage()::" style="width:64px;height:64px;" />
 			<br/>
 			<br/>
-			<b>::p1.getName()::</b>
+			<b>::b.retail.getName()::</b>
 		</div>
 		
 		<div class="col-md-8">
@@ -22,45 +23,37 @@
 				<tr>
 					<th>Adhérent</th>
 					<th>Quantité</th>
-			
 				</tr>
-				::set total = 0.0::
 				
 				::foreach o orders::
 				<tr>
 					<td>::o.userName::</td>
 					<td>
-						
 						<div class="input-group">
 						  <input type="text" name="u::o.userId::" value="::o.quantity*o.productQt::" class="form-control form-inline" />
-						  <div class="input-group-addon">::unit(p1._unitType,false)::</div>
+						  <div class="input-group-addon">::unit(b.retail._unitType,false)::</div>
 						</div>
-						
-						
 					</td>
-					::set total = total + (o.quantity*o.productQt)::
 				</tr>
 				::end::
 				
 				<tr>
 					<td class="text-right">Total commande</td>
-					<td>::total:: ::unit(p1._unitType,false)::</td>
+					<td>::b.totalQt:: ::unit(b.retail._unitType,false)::</td>
 				</tr>
 				
 				
 				<tr>
-					<td class="text-right">Caisses entières (::p2.qt:: ::unit(p2._unitType,false)::)</td>
-					<td>::Math.floor(total/p2.qt)::</td>
+					<td class="text-right">Caisses entières (::b.wholesale.qt:: ::unit(b.wholesale._unitType,false)::)</td>
+					<td>::b.relatedWholesaleOrder::</td>
 				</tr>
 				
-				::set missing = p2.qt - (total%p2.qt)::			
-					
 				<tr>
 					<td class="text-right">Il manque</td>
-					::if((total%p2.qt)==0)::
-						<td class="success">$$check(::true::) 0 ::unit(p2._unitType,false)::</td>
+					::if(b.missing==0)::
+						<td class="success">$$check(::true::) 0 ::unit(b.wholesale._unitType,false)::</td>
 					::else::
-						<td class="danger">$$check(::false::) ::missing:: ::unit(p2._unitType,false)::</td>
+						<td class="danger">$$check(::false::) ::b.missing:: ::unit(b.wholesale._unitType,false)::</td>
 					::end::
 				</tr>		
 				
@@ -71,7 +64,7 @@
 
 	<p>
 		<a href="/p/who/balance/::d.id::" class="btn btn-default"><i class="fa fa-chevron-left" aria-hidden="true"></i> Retour</a>	
-		<a href="/p/who/detail/::d.id::/::p1.id::" class="btn btn-default"><i class="fa fa-refresh" aria-hidden="true"></i> Rafraîchir la page</a>
+		<a href="/p/who/detail/::d.id::/::b.retail.id::" class="btn btn-default"><i class="fa fa-refresh" aria-hidden="true"></i> Rafraîchir la page</a>
 		<a href="/contractAdmin/edit/::d._contract.id::?d=::d.id::" class="btn btn-default" target="_blank"><i class="fa fa-plus" aria-hidden="true"></i> Ajouter une commande</a>		
 		<input type="submit" class="btn btn-primary" value="Ajuster les quantités" /> 
 	</p>

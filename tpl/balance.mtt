@@ -6,9 +6,8 @@
 	Distribution du <b>::hDate(d.date)::</b>
 </p>
 
-
 	::set ok = true::
-	<p ::cond products!=null::>
+	<p ::cond balancing!=null::>
 		
 		<table class="table table-bordered">
 		<tr>
@@ -16,44 +15,38 @@
 			<th>Produit en gros</th>
 			<th>Qté commandée</th>
 			<th>Caisses entières</th>
-			
-			
 		</tr>
-		::foreach p products::
+		::foreach p balancing::
 		
-		::if(p.p1.ref==p.p2.ref)::
+		::if(p.retail.ref==p.wholesale.ref)::
 		::set class="disabled"::
 		::else::
 		::set class=""::
 		::end::
 		
-		::set qt = totalOrder(p.p1)*p.p1.qt::
-
-		<tr class="::class::" ::cond qt>0::>
+		<tr class="::class::" ::cond p.totalQt>0::>
 			<td>
-				<img src="::p.p1.getImage()::" style="width:32px;height:32px;" />&nbsp;::p.p1.getName()::
+				<img src="::p.retail.getImage()::" style="width:32px;height:32px;" />&nbsp;::p.retail.getName()::
 			</td>
 			<td>
-				::p.p2.qt:: ::unit(p.p2._unitType,false)::
+				::p.wholesale.qt:: ::unit(p.wholesale._unitType,false)::
 			</td>
 			<td class="text-center">
-				::qt:: ::unit(p.p2._unitType,false)::
+				::p.totalQt:: ::unit(p.wholesale._unitType,false)::
 			</td>
 			<th class="text-center">
-				::Math.floor(qt/p.p2.qt)::
+				::p.relatedWholesaleOrder::
 			</th>
 			
-			::set missing =  p.p2.qt - (qt % p.p2.qt)::	
-			
-			::if( (qt % p.p2.qt)==0 )::
+			::if( p.missing==0 )::
 				<td class="success text-center">$$check(::true::)</td>
 			::else::
-				<td class="danger text-center">$$check(::false::) Manque ::missing:: ::unit(p.p2._unitType,false)::</td>
+				<td class="danger text-center">$$check(::false::) Manque ::p.missing:: ::unit(p.wholesale._unitType,false)::</td>
 				::set ok = false::
 			::end::
 				
 			<td>
-				<a href="/p/who/detail/::d.id::/::p.p1.id::" class="btn btn-default btn-sm">Ajuster</a>
+				<a href="/p/who/detail/::d.id::/::p.retail.id::" class="btn btn-default btn-sm">Ajuster</a>
 			</td>
 			
 		</tr>

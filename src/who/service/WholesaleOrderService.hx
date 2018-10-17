@@ -111,8 +111,36 @@ class WholesaleOrderService {
 			sugoi.db.Cache.set("wholesale_links_contract"+contract.id,cache,60*10); //store for 10 mn
 		}
 
-
 		return out;
+	}
+
+	/**
+		Get a summary of balancing needs
+	**/
+	public function getBalancingSummary(d:db.Distribution,?product:db.Product):Array<{retail:db.Product,wholesale:db.Product,totalQt:Float,relatedWholesaleOrder:Int,missing:Float}>{
+		var links = getLinks(true);
+		var out = [];
+		var roundTo = App.current.view.roundTo;
+
+		for( l in links ){
+			if(product!=null && l.p1.id!=product.id) continue;
+			var qt = totalOrder(l.p1,d) * l.p1.qt;
+			out.push({
+				retail : l.p1, 					//retail product
+				wholesale : l.p2, 				//wholesale product
+				totalQt : qt, 					//total ordered quantity of retail product
+				relatedWholesaleOrder : Math.floor(roundTo(qt/l.p2.qt,2)),				//how many wholesale product it makes					
+				missing : roundTo(l.p2.qt - (qt % l.p2.qt),2)	//missing quantity to reach wholesale
+			});
+		}
+		return out;
+	}
+
+	public function totalOrder(p:db.Product,d:db.Distribution){
+		var orders = db.UserContract.manager.search($distribution == d && $product == p, false);			
+		var tot = 0.0;
+		for ( o in orders ) tot += o.quantity;
+		return tot;
 	}
 
 	public function sortOffersByQt(offers:Array<pro.db.POffer>):Array<pro.db.POffer>{
@@ -123,6 +151,8 @@ class WholesaleOrderService {
 
 		return offers;
 	}
+
+
 
 	/**
 	 * Confirms order balancing : convert retail products orders to wholesale products orders
@@ -154,30 +184,7 @@ class WholesaleOrderService {
 			}
 		}
 
-		// Sys.println("===TOTAL===");
-		//for( o in orders) Sys.println(o.user.getName()+" "+o.quantity+" "+o.product.getName()+"\n");
-
-		//check if the whole order is confirmable.
-		//simulate a summary  by products		
-		/*var check  = new Map<Int,Float>(); //product Id -> Qty
-		for ( o in orders){
-			var q = check.get(o.product.id);
-			if(q==null) q = 0.0;
-			q += o.quantity;
-			check.set(o.product.id, q );
-		}
-
-		//check if Balancing is possible : quantities should be integers		
-		for(k  in check.keys()){
-			var v = check.get(k);
-			var prod = db.Product.manager.get(k);
-			if(v!=Math.round(v)){
-				//changes won't be commited thanks to MySQL Transactions
-				throw new Error("Balancing not possible : quantity "+v+" of "+prod.getName()+" should be integer");
-			}
-		}*/
 		var total = OrderService.getOrdersByProduct({distribution:d});
-		//trace(total);
 
 		for( t in total ){
 			//do not check products wich are not detail products

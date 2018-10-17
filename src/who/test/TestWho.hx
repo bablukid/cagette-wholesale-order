@@ -48,7 +48,6 @@ class TestWho extends haxe.unit.TestCase
 	}
 
 	function testProductLinks(){
-
 		
 		var rcs = connector.db.RemoteCatalog.getFromCatalog(pro.test.ProTestSuite.CATALOG1);
 		var contract = rcs.first().getContract();
@@ -210,8 +209,78 @@ class TestWho extends haxe.unit.TestCase
 		//check bug of non-aggregation of order lines for the same user after balancing		
 		var uo = test.TestSuite.SEB.getOrdersFromDistrib(d);
 		assertEquals(1,uo.length);
+	}
 
 
+	function testBalancingSummary(){
 
+		var rcs = connector.db.RemoteCatalog.getFromCatalog(pro.test.ProTestSuite.CATALOG1);
+		var contract = rcs.first().getContract();
+		var s = new who.service.WholesaleOrderService(contract);
+		var placeId = test.TestSuite.LOCAVORES.getPlaces().first().id;
+
+		//add a product to catalog : "Bicarbonate 0.1kg" and "Bicarbonate 1.3kg"
+		var p = 	PProductService.make("Bicarbonate",Unit.Kilogram,"BIC",pro.test.ProTestSuite.CATALOG1.company);
+		var off1 = 	PProductService.makeOffer(p,0.1,"BIC-1");
+		var off2 = 	PProductService.makeOffer(p,1.3,"BIC-2");
+		PProductService.makeCatalogOffer(off1,pro.test.ProTestSuite.CATALOG1,2.0);
+		PProductService.makeCatalogOffer(off2,pro.test.ProTestSuite.CATALOG1,2.0);
+		pro.service.PCatalogService.sync(true,pro.test.ProTestSuite.CATALOG1.id);
+		
+		//we should have now 6 products in this contract
+		assertEquals(6,contract.getProducts().length);
+
+		var d = service.DistributionService.create(
+			contract,
+			new Date(2029,1,10,0,0,0),
+			new Date(2029,1,10,20,0,0),
+			placeId,
+			null,
+			null,
+			null,
+			null,
+			new Date(2029,0,1,0,0,0),
+			new Date(2029,0,30,0,0,0),
+			null,
+			false
+		);
+
+		//make orders
+		var lemon1 = db.Product.getByRef(contract,"CIT-1");
+		var lemon5 = db.Product.getByRef(contract,"CIT-5");
+		var lemon10 = db.Product.getByRef(contract,"CIT-10");
+		var tomato = db.Product.getByRef(contract,"TOM-1");
+		var bicarb = db.Product.getByRef(contract,"BIC-1");
+
+		//SEB 2kg + 10kg lemon
+		service.OrderService.make(test.TestSuite.SEB,2,lemon1,d.id);
+		service.OrderService.make(test.TestSuite.SEB,1,lemon10,d.id);
+
+		//FRA 5kg lemon + 5kg tomato + 50 bicarb (5kg)
+		service.OrderService.make(test.TestSuite.FRANCOIS,1,lemon5,d.id);
+		service.OrderService.make(test.TestSuite.FRANCOIS,5,tomato,d.id);
+		service.OrderService.make(test.TestSuite.FRANCOIS,50,bicarb,d.id);
+
+		//JULIE 10kg Lemon + 1kg tomato + 41 bicarb (4.1kg)
+		service.OrderService.make(test.TestSuite.JULIE,1,lemon10,d.id);
+		service.OrderService.make(test.TestSuite.JULIE,1,tomato,d.id);
+		service.OrderService.make(test.TestSuite.JULIE,41,bicarb,d.id);
+
+		var balancing = s.getBalancingSummary(d);
+		
+		//check bicarb summary
+		assertEquals( balancing[0].totalQt , 9.1 );
+		assertEquals( balancing[0].relatedWholesaleOrder , 7 );
+		assertEquals( balancing[0].missing , 0.0 );
+
+		//check lemon 5kg summary = missing 5kg to make 10 kg
+		assertEquals( balancing[1].totalQt , 5.0 );
+		assertEquals( balancing[1].relatedWholesaleOrder , 0 );
+		assertEquals( balancing[1].missing , 5.0 );
+
+		//check lemon 1kg summary = 
+		assertEquals( balancing[2].totalQt , 2.0 );
+		assertEquals( balancing[2].relatedWholesaleOrder , 0 );
+		assertEquals( balancing[2].missing , 8.0 );
 	}
 }
