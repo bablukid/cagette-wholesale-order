@@ -107,30 +107,16 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 					if(productInfos.desc==null) productInfos.desc = "";
 
 					var s = new who.service.WholesaleOrderService(c);
-					var balanceInfos = null;
-					for ( link in s.getLinks(true)){
-						if(link.p1.id == productInfos.id){
-							balanceInfos = link;
-							break;
-						}
-					}
-					if(balanceInfos==null) return null;
-					
-					var totalOrder =  function(p:db.Product){
-						var orders = db.UserContract.manager.search($distribution == distribution && $product == p, false);			
-						var tot = 0.0;
-						for ( o in orders ) tot += o.quantity;
-						return tot;
-					}
+					var p = db.Product.manager.get(productInfos.id,false);
+					var balancing = s.getBalancingSummary(distribution,p);
+					if(balancing==null) return null;
 
 					var html = App.current.processTemplate("plugin/who/block/productInfos.mtt",{
-						products:[balanceInfos],
+						balancing:balancing,
 						d:distribution,
-						totalOrder:totalOrder,
 						unit:App.current.view.unit,
 						Math:Math
 					});
-
 
 					productInfos.desc += "<br/><hr/>"+html;
 				}

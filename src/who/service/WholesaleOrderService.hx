@@ -2,6 +2,7 @@ package who.service;
 import who.db.WConfig;
 import tink.core.Error;
 import service.OrderService;
+using tools.FloatTool;
 
 /**
  *  Wholesale order service
@@ -76,6 +77,10 @@ class WholesaleOrderService {
 		}
 		
 		for (offers in catOffers ){
+			
+			//checks
+			if( offers.length<2 ) continue; //need at least 2 offers
+			for(off in offers) if(off.quantity==null) throw 'Offer "${off.getName()}" has no quantity';
 
 			var offers = sortOffersByQt(offers);
 
@@ -104,6 +109,11 @@ class WholesaleOrderService {
 			}
 		}
 
+		//in case products do not have qt
+		for(o in out.copy()){
+			if(o.p1.qt==null || o.p2.qt==null) out.remove(o);
+		}
+
 		//save cache
 		if(cache==null){
 			var cache = [];
@@ -117,20 +127,40 @@ class WholesaleOrderService {
 	/**
 		Get a summary of balancing needs
 	**/
-	public function getBalancingSummary(d:db.Distribution,?product:db.Product):Array<{retail:db.Product,wholesale:db.Product,totalQt:Float,relatedWholesaleOrder:Int,missing:Float}>{
+	public function getBalancingSummary(d:db.Distribution,?product:db.Product,?debug=false):Array<{retail:db.Product,wholesale:db.Product,totalQt:Float,relatedWholesaleOrder:Int,missing:Float}>{
 		var links = getLinks(true);
-		var out = [];
-		var roundTo = App.current.view.roundTo;
+		var out = [];	
+
+		//check that product is not a wholesale product
+		if(product!=null){
+			for( l in links ){
+				if( product.id==l.p2.id ) return null;
+			}
+		}
 
 		for( l in links ){
 			if(product!=null && l.p1.id!=product.id) continue;
-			var qt = totalOrder(l.p1,d) * l.p1.qt;
+			var qt = (totalOrder(l.p1,d) * l.p1.qt).clean();
+
+			/*if(debug){
+				trace('On a $qt kg de commandé');
+				trace('Nbre de produits de gros '+(qt/l.p2.qt)) ;
+				trace('Nbre de produits de gros entier '+Math.floor(qt/l.p2.qt));
+				trace('$qt modulo  ${l.p2.qt} = '+qt%l.p2.qt);
+			}*/
+
+			var missing = if(qt % l.p2.qt==0){
+				0;
+			}else{
+				(l.p2.qt - (qt % l.p2.qt)).clean();//avoid 7.0000000001
+			}
+
 			out.push({
 				retail : l.p1, 					//retail product
 				wholesale : l.p2, 				//wholesale product
 				totalQt : qt, 					//total ordered quantity of retail product
-				relatedWholesaleOrder : Math.floor(roundTo(qt/l.p2.qt,2)),				//how many wholesale product it makes					
-				missing : roundTo(l.p2.qt - (qt % l.p2.qt),2)	//missing quantity to reach wholesale
+				relatedWholesaleOrder : Math.floor((qt/l.p2.qt).clean()),				//how many wholesale product it makes					
+				missing : missing				//missing quantity to reach wholesale
 			});
 		}
 		return out;

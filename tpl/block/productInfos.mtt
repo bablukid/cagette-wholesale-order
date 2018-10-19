@@ -11,44 +11,24 @@
 			<th>Manque&nbsp;:</th>
 			
 		</tr>
-		::if products!=null::
-			::foreach p products::
-			
-				::if(p.p1.ref==p.p2.ref)::
-					::set class="disabled"::
-				::else::
-					::set class=""::
-				::end::
-
-				
-
-				::set qt = totalOrder(p.p1)*p.p1.qt::
-				
-				<tr class="::class::" >
-					
-					<td>
-						::p.p2.qt::&nbsp;::unit(p.p2._unitType,false)::
-					</td>
-					<td>
-						
-						::qt::&nbsp;::unit(p.p2._unitType,false)::
-					</td>
-					<th class="text-center">
-						::Math.floor(qt/p.p2.qt)::
-					</th>
-					
-					::set missing =  p.p2.qt - (qt % p.p2.qt)::			
-					::if( (qt % p.p2.qt)==0 )::
-						<td class="success">
-							$$check(::true::)
-						0&nbsp;::unit(p.p2._unitType,false)::</td>
-					::else::
-						<td class="danger">
-							$$check(::false::)
-						::missing::&nbsp;::unit(p.p2._unitType,false)::</td>
-					::end::
-				</tr>
+		::foreach b balancing::		
+		<tr class="::class::" ::cond b.totalQt>0::>
+			<td >
+				::b.wholesale.qt:: ::unit(b.wholesale._unitType,false)::
+			</td>
+			<td class="text-center">
+				::b.totalQt:: ::unit(b.wholesale._unitType,false)::
+			</td>
+			<th class="text-center">
+				::b.relatedWholesaleOrder::
+			</th>
 		
-			::end::
-		::end::	
+			::if( b.missing==0.0 )::
+				<td class="success text-center">$$check(::true::)</td>
+			::else::
+				<td class="danger text-center">$$check(::false::) 
+					Manque ::b.missing:: ::unit(b.wholesale._unitType,false)::</td>
+			::end::	
+		</tr>
+		::end::
 </table>

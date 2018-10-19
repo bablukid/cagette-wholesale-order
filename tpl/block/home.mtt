@@ -23,36 +23,7 @@
 			<th>Total commandé</th>
 			<th>Caisses entières</th>
 		</tr>
-		<!--::foreach p products::
 		
-		::set qt = totalOrder(p.p1)*p.p1.qt::
-
-		<tr class="::class::" ::cond qt>0::>
-			<td class="text-left">				
-				::p.p1.getName()::
-			</td>
-			<td class="text-center">
-				::p.p2.qt:: ::unit(p.p2._unitType,false)::
-			</td>
-			<td class="text-center">
-				::qt:: ::unit(p.p2._unitType,false)::
-			</td>
-			<th class="text-center">
-				::Math.floor(roundTo(qt/p.p2.qt,2))::
-			</th>
-			
-			::set missing =  p.p2.qt - (qt % p.p2.qt)::	
-			
-			::if( roundTo(qt % p.p2.qt,2)==0.0 )::
-				<td class="success text-center">$$check(::true::)</td>
-			::else::
-				<td class="danger text-center">$$check(::false::) Manque ::roundTo(missing,2):: ::unit(p.p2._unitType,false)::</td>
-				::set needBalancing = true::
-			::end::
-	
-		</tr>
-		
-		::end::	-->
 		::foreach b balancing::
 		
 		<tr class="::class::" ::cond b.totalQt>0::>

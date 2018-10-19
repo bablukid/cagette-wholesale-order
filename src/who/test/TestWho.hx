@@ -45,6 +45,8 @@ class TestWho extends haxe.unit.TestCase
 		var contract = pro.service.PCatalogService.linkCatalogToGroup(pro.test.ProTestSuite.CATALOG1,test.TestSuite.LOCAVORES,1).getContract();
 		var s = new who.service.WholesaleOrderService(contract);
 		s.enable();
+
+		// trace("Cache is "+sugoi.db.Cache.manager.all().length);
 	}
 
 	function testProductLinks(){
@@ -69,7 +71,7 @@ class TestWho extends haxe.unit.TestCase
 		assertEquals(lemon10.getName(),"Lemon 10 Kg.");
 		
 		//check cache is empty
-		assertTrue( sugoi.db.Cache.manager.count(true)==0 );
+		assertTrue( sugoi.db.Cache.manager.all().length==0 );		
 
 		var s = new who.service.WholesaleOrderService(contract);
 
@@ -78,21 +80,19 @@ class TestWho extends haxe.unit.TestCase
 		assertEquals(offs[1].quantity,5);
 		assertEquals(offs[2].quantity,1);
 
-		var links = s.getLinks();
-
-		// trace(links);
+		var links = s.getLinks(true);
 
 		//links should list only lemons
 		assertTrue( links!=null );
-		assertTrue( links.length == 2 );
+		assertEquals( 2 , links.length );
 
 		//Lemon 5kg -> Lemon 10kg
-		assertTrue( links[0].p1.qt == 5 ); //
-		assertTrue( links[0].p2.qt == 10 );
+		assertEquals( 5.0 , links[0].p1.qt ); //
+		assertEquals( 10.0 , links[0].p2.qt  );
 		
 		//Lemon 1kg -> Lemon 10kg
-		assertTrue( links[1].p1.qt == 1 );
-		assertTrue( links[1].p2.qt == 10 );
+		assertEquals( 1.0 , links[1].p1.qt );
+		assertEquals( 10.0 , links[1].p2.qt );
 	}
 
 	function testConfirmFails(){
@@ -256,22 +256,22 @@ class TestWho extends haxe.unit.TestCase
 		service.OrderService.make(test.TestSuite.SEB,2,lemon1,d.id);
 		service.OrderService.make(test.TestSuite.SEB,1,lemon10,d.id);
 
-		//FRA 5kg lemon + 5kg tomato + 50 bicarb (5kg)
+		//FRA 5kg lemon + 5kg tomato + 30 bicarb (3kg)
 		service.OrderService.make(test.TestSuite.FRANCOIS,1,lemon5,d.id);
 		service.OrderService.make(test.TestSuite.FRANCOIS,5,tomato,d.id);
-		service.OrderService.make(test.TestSuite.FRANCOIS,50,bicarb,d.id);
+		service.OrderService.make(test.TestSuite.FRANCOIS,30,bicarb,d.id);
 
 		//JULIE 10kg Lemon + 1kg tomato + 41 bicarb (4.1kg)
 		service.OrderService.make(test.TestSuite.JULIE,1,lemon10,d.id);
 		service.OrderService.make(test.TestSuite.JULIE,1,tomato,d.id);
 		service.OrderService.make(test.TestSuite.JULIE,41,bicarb,d.id);
 
-		var balancing = s.getBalancingSummary(d);
+		var balancing = s.getBalancingSummary(d,null,true);
 		
 		//check bicarb summary
-		assertEquals( balancing[0].totalQt , 9.1 );
-		assertEquals( balancing[0].relatedWholesaleOrder , 7 );
-		assertEquals( balancing[0].missing , 0.0 );
+		assertEquals( balancing[0].totalQt , 7.1 );
+		assertEquals( balancing[0].relatedWholesaleOrder , 5 );
+		assertEquals( balancing[0].missing , 0.7 );
 
 		//check lemon 5kg summary = missing 5kg to make 10 kg
 		assertEquals( balancing[1].totalQt , 5.0 );
@@ -282,5 +282,19 @@ class TestWho extends haxe.unit.TestCase
 		assertEquals( balancing[2].totalQt , 2.0 );
 		assertEquals( balancing[2].relatedWholesaleOrder , 0 );
 		assertEquals( balancing[2].missing , 8.0 );
+
+		//complete last bag of bicarb ( 91 x 0.1kg)
+		service.OrderService.make(test.TestSuite.FRANCOIS,20,bicarb,d.id);
+		var balancing = s.getBalancingSummary(d,bicarb);
+		assertEquals( balancing[0].totalQt , 9.1 );
+		assertEquals( balancing[0].relatedWholesaleOrder , 7 );
+		assertEquals( balancing[0].missing , 0.0 );
+
+		//add 1.3kg = 10.4kg = 8 bags of 1.3kg
+		service.OrderService.make(test.TestSuite.FRANCOIS,13,bicarb,d.id);
+		var balancing = s.getBalancingSummary(d,bicarb,true);
+		assertEquals( balancing[0].totalQt , 10.4 );
+		assertEquals( balancing[0].relatedWholesaleOrder , 8 );
+		assertEquals( balancing[0].missing , 0.0 );
 	}
 }
