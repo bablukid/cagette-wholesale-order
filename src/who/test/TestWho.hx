@@ -21,10 +21,6 @@ class TestWho extends haxe.unit.TestCase
 		test.TestSuite.initDB();
 		test.TestSuite.initDatas();
 
-		//add Cpro datas
-		pro.test.ProTestSuite.initDB();
-		pro.test.ProTestSuite.initDatas();
-
 		test.TestSuite.createTable(who.db.WConfig.manager);
 
 		//product Lemon with 3 offers : 1kg, 5kg, 10kg
@@ -199,7 +195,7 @@ class TestWho extends haxe.unit.TestCase
 		3 x 10kg lemon
 		6 x 1kg tomato
 		*/
-		var summary = service.OrderService.getOrdersByProduct({distribution:d});
+		var summary = service.ReportService.getOrdersByProduct(d);
 		assertEquals(summary.length,2);
 		var slemon = Lambda.find(summary,function(x) return x.pid == lemon10.id);
 		assertEquals(3.0,slemon.quantity);

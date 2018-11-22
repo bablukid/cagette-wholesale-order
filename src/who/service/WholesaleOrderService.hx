@@ -70,24 +70,25 @@ class WholesaleOrderService {
 		//populate a map by productId containing related offers
 		var catOffers = new Map<Int,Array<pro.db.POffer>>(); 
 		for( o in rc.getCatalog().getOffers()){
-			var x = catOffers[o.offer.product.id];
-			if(x==null) x = [];
-			x.push(o.offer);
-			catOffers[o.offer.product.id] = x;
+			var arr = catOffers[o.offer.product.id];
+			if(arr==null) arr = [];
+			if(o.offer.quantity!=null){
+				arr.push(o.offer);
+				catOffers[o.offer.product.id] = arr;
+			}
 		}
 		
 		for (offers in catOffers ){
 			
 			//checks
 			if( offers.length<2 ) continue; //need at least 2 offers
-			for(off in offers) if(off.quantity==null) throw 'Offer "${off.getName()}" has no quantity';
 
 			var offers = sortOffersByQt(offers);
 
 			//find the big offer
 			var bigOffer = offers[0];
 			var big = db.Product.getByRef(contract,bigOffer.ref);
-			if (big == null) throw new tink.core.Error("unable to find wholesale product with ref "+bigOffer.ref);
+			if (big == null) continue;//throw new tink.core.Error("unable to find wholesale product with ref "+bigOffer.ref);
 			offers.remove(bigOffer);
 
 			//big products should have wholesale enabled ! Otherwise editing an order will round quantities
@@ -103,7 +104,7 @@ class WholesaleOrderService {
 			for ( off in offers ){
 				
 				var little = db.Product.getByRef(contract,off.ref);
-				if (little == null) throw new tink.core.Error("unable to find detail product with ref "+off.ref);
+				if (little == null) continue;//throw new tink.core.Error("unable to find retail product with ref "+off.ref);
 				if(excludeIdenticalProducts && little.id==big.id) continue;
 				out.push({p1:little,p2:big});
 			}
@@ -173,7 +174,7 @@ class WholesaleOrderService {
 		return tot;
 	}
 
-	public function sortOffersByQt(offers:Array<pro.db.POffer>):Array<pro.db.POffer>{
+	public function sortOffersByQt(offers:Array<pro.db.POffer>) : Array<pro.db.POffer> {
 		//highest first
 		offers.sort(function(x,y){
 			return Math.round(y.quantity - x.quantity);
@@ -214,7 +215,7 @@ class WholesaleOrderService {
 			}
 		}
 
-		var total = OrderService.getOrdersByProduct({distribution:d});
+		var total = service.ReportService.getOrdersByProduct(d);
 
 		for( t in total ){
 			//do not check products wich are not detail products
