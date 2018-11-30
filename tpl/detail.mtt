@@ -63,9 +63,10 @@
 	</div>
 
 	<p>
-		<a href="/p/who/balance/::d.id::" class="btn btn-default"><i class="fa fa-chevron-left" aria-hidden="true"></i> Retour</a>	
-		<a href="/p/who/detail/::d.id::/::b.retail.id::" class="btn btn-default"><i class="fa fa-refresh" aria-hidden="true"></i> Rafraîchir la page</a>
-		<a href="/contractAdmin/edit/::d._contract.id::?d=::d.id::" class="btn btn-default" target="_blank"><i class="fa fa-plus" aria-hidden="true"></i> Ajouter une commande</a>		
+		<a href="/p/who/balance/::d.id::" class="btn btn-default">
+			<i class="fa fa-chevron-left" aria-hidden="true"></i> Retour
+		</a>	
+		<a href="/p/who/addOrder/::d.id::/::b.retail.id::/::b.missing::" class="btn btn-default"><i class="fa fa-plus" aria-hidden="true"></i> Ajouter une commande</a>		
 		<input type="submit" class="btn btn-primary" value="Ajuster les quantités" /> 
 	</p>
 </form>

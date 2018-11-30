@@ -58,7 +58,7 @@
 	::if now.getTime() > d.orderEndDate.getTime() && now.getTime() < d.date.getTime()::
 		::if isBalanced::
 		<div class="alert-success" style="width:80%;padding: 8px;margin:auto;">
-				<span class="glyphicon glyphicon-ok"></span> Commmande en gros ajustée !
+				<span class="glyphicon glyphicon-ok"></span> Commande en gros ajustée !
 		</div>
 		::else::
 		<a href="/p/who/::d._contract.id::" class="btn btn-primary">

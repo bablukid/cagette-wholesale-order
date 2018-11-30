@@ -1,0 +1,35 @@
+::use 'contractadmin/design.mtt'::
+	
+<h3>Ajustage de commande</h3>
+
+<div class="row">
+	
+	<div class="col-md-4 text-center">
+		<br/>
+		<br/>
+		<img src="::product.getImage()::" style="width:64px;height:64px;" />
+		<br/>
+		<br/>
+		<b>::product.getName()::</b>
+		
+	</div>
+	
+	<div class="col-md-8">
+		<p>
+			Saisissez une nouvelle commande pour un adhérent de votre groupe :
+		</p>
+		<p>
+			::raw form::
+		</p>
+		
+	</div>
+
+	<div class="col-md-12">
+		<a onclick="javascript:history.back();" class="btn btn-default">
+			<i class="fa fa-chevron-left" aria-hidden="true"></i> Retour
+		</a>
+	</div>
+	
+</div>
+
+::end::

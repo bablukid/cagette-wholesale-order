@@ -186,21 +186,30 @@ class Main extends controller.Controller
 	public function doDetail(d:db.Distribution, p:db.Product){
 		
 		var s = new who.service.WholesaleOrderService(d.contract); 
-		//var links = s.getLinks();
-		//var retailToWholesale = who.service.WholesaleOrderService.linksAsMap(links);
-		
 		init(d.contract);
 		
 		view.orders = service.OrderService.prepare( db.UserContract.manager.search($distribution == d && $product == p, false) );
 		view.d = d;
 		view.balancing = s.getBalancingSummary(d,p);
+
+		//check if there is already float quantities on the wholesale product
+		var whoOrders = s.getWholesaleOrdersFromRetail(d,p);
+		var whoQt=0.0;
+		for(o in whoOrders) whoQt += o.quantity;
+		trace(whoQt);
+		if(whoQt!=Math.round(whoQt)){
+			var msg = "Attention, vous avez déjà des commandes en fractions de caisses. ";
+			msg += "Retirez les sinon l'ajustage va échouer.<br/>";
+			msg += " ( "+whoOrders.join(', ')+" ) <br/>";
+			msg += "<a href='/contractAdmin/orders/"+d.contract.id+"?d="+d.id+"'>Cliquez ici pour modifier les commandes</a>";
+			App.current.session.addMessage(msg,true);
+		} 
 		
 		//update quantities
 		if (checkToken()){
 			//params are like : {u10748 => 4, u1 => 2, token => b49d318e22952b2454c1f92e05d1078a}
 			for (k in app.params.keys() ){
 				if (k.substr(0, 1) == "u"){
-					//trace('user '+k.substr(1)+' prend '+app.params.get(k));
 					var userId = Std.parseInt(k.substr(1));
 					var qt = Std.parseFloat( app.params.get(k) );
 					qt = qt / p.qt;
@@ -209,10 +218,37 @@ class Main extends controller.Controller
 				}
 			}
 			
-			throw Ok("/p/who/detail/"+d.id+"/"+p.id, "Quantités ajustées");
-			
-		}
+			throw Ok("/p/who/detail/"+d.id+"/"+p.id, "Quantités ajustées");			
+		}		
+	}
+
+	/**
+	Add an order to someone (who didnt ordered yet)
+	**/
+	@logged @tpl("plugin/who/addOrder.mtt")
+	public function doAddOrder(d:db.Distribution, p:db.Product,?qt=0){
 		
+		//var s = new who.service.WholesaleOrderService(d.contract); 
+		init(d.contract);
+
+		view.product = p;
+		
+		var f = new sugoi.form.Form("addOrder");
+		f.addElement(new sugoi.form.elements.IntSelect("member","Adhérent",d.contract.amap.getMembersFormElementData(),true));
+		f.addElement(new sugoi.form.elements.IntInput("qt","Quantité",qt,true));
+		
+		
+		//update quantities
+		if (f.isValid()){
+			
+			var qt :Int = f.getValueOf("qt");
+			var user = db.User.manager.get(f.getValueOf("member"),false);
+			service.OrderService.make(user,qt,p,d.id);
+			
+			throw Ok("/p/who/detail/"+d.id+"/"+p.id, "Commande ajoutée");			
+		}
+
+		view.form = f;		
 	}
 
 	/**

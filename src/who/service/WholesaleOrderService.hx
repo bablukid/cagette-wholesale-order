@@ -125,6 +125,15 @@ class WholesaleOrderService {
 		return out;
 	}
 
+	public function getWholesaleOrdersFromRetail(d:db.Distribution,retailProduct:db.Product):Array<db.UserContract>{
+		var map = linksAsMap(getLinks(true));
+		var whoProduct = map.get(retailProduct.id);
+
+		return Lambda.array(db.UserContract.manager.search($distribution==d && $product==whoProduct,false));
+
+		
+	}
+
 	/**
 		Get a summary of balancing needs
 	**/
