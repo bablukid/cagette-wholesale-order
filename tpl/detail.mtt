@@ -1,6 +1,9 @@
 ::use 'contractadmin/design.mtt'::
 	
-<h3>Ajustage de commande</h3>
+<h3>
+	<i class="icon icon-balance"></i> Ajustage de commande
+</h3>
+
 <form>
 	
 	<input type="hidden" name="token" value="::token::" />
@@ -64,9 +67,11 @@
 
 	<p>
 		<a href="/p/who/balance/::d.id::" class="btn btn-default">
-			<i class="fa fa-chevron-left" aria-hidden="true"></i> Retour
+			<i class="icon icon-chevron-left"></i> Retour
 		</a>	
-		<a href="/p/who/addOrder/::d.id::/::b.retail.id::/::b.missing::" class="btn btn-default"><i class="fa fa-plus" aria-hidden="true"></i> Ajouter une commande</a>		
+		<a href="/p/who/addOrder/::d.id::/::b.retail.id::/::b.missing::" class="btn btn-default">
+			<i class="icon icon-plus"></i> Ajouter une commande
+		</a>		
 		<input type="submit" class="btn btn-primary" value="Ajuster les quantités" /> 
 	</p>
 </form>

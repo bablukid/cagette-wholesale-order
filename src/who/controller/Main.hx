@@ -196,7 +196,7 @@ class Main extends controller.Controller
 		var whoOrders = s.getWholesaleOrdersFromRetail(d,p);
 		var whoQt=0.0;
 		for(o in whoOrders) whoQt += o.quantity;
-		trace(whoQt);
+		//trace(whoQt);
 		if(whoQt!=Math.round(whoQt)){
 			var msg = "Attention, vous avez déjà des commandes en fractions de caisses. ";
 			msg += "Retirez les sinon l'ajustage va échouer.<br/>";

@@ -1,6 +1,6 @@
 ::use 'contractadmin/design.mtt'::
 	
-	<h3>Commande en gros</h3>
+	<h3><i class="icon icon-wholesale"></i> Commande en gros</h3>
 
 	<p>
 		Ce module permet de gérer une commande de produits au détail qui doit être convertie en commande en gros.<br/>
@@ -105,11 +105,11 @@
 	</p>
 
 	<p class="text-center">
-		<a href="?action=disableDetail" class="btn btn-default"> <span class="glyphicon glyphicon-unchecked"></span> Désactiver tous les produits au détail</a>
-		<a href="?action=enableDetail" class="btn btn-default"> <span class="glyphicon glyphicon-check"></span> Activer tous les produits au détail</a>
+		<a href="?action=disableDetail" class="btn btn-default"> <i class="icon icon-square"></i> Désactiver tous les produits au détail</a>
+		<a href="?action=enableDetail" class="btn btn-default"> <i class="icon icon-square-check"></i> Activer tous les produits au détail</a>
 		<br/>
-		<a href="?action=disableWholesale" class="btn btn-default"> <span class="glyphicon glyphicon-unchecked"></span> Désactiver tous les produits en gros</a>
-		<a href="?action=enableWholesale" class="btn btn-default"> <span class="glyphicon glyphicon-check"></span> Activer tous les produits en gros</a>
+		<a href="?action=disableWholesale" class="btn btn-default"> <i class="icon icon-square"></i> Désactiver tous les produits en gros</a>
+		<a href="?action=enableWholesale" class="btn btn-default"> <i class="icon icon-square-check"></i> Activer tous les produits en gros</a>
 	</p>
 
 	

@@ -58,16 +58,16 @@
 	::if now.getTime() > d.orderEndDate.getTime() && now.getTime() < d.date.getTime()::
 		::if isBalanced::
 		<div class="alert-success" style="width:80%;padding: 8px;margin:auto;">
-				<span class="glyphicon glyphicon-ok"></span> Commande en gros ajustée !
+			<i class="icon icon-check"></i> Commande en gros ajustée !
 		</div>
 		::else::
 		<a href="/p/who/::d._contract.id::" class="btn btn-primary">
-			<span class="glyphicon glyphicon-th"></span> Coordinateur : Ajustez la commande en gros
+			<i class="icon icon-wholesale"></i>  Coordinateur : Ajustez la commande en gros
 		</a>
 		::end::
 	::else::
 		<a href="/p/who/::d._contract.id::" class="btn btn-default btn-xs">
-			<span class="glyphicon glyphicon-cog"></span> Coordinateur :  Options de commande en gros
+			<i class="icon icon-cog"></i> Coordinateur :  Options de commande en gros
 		</a>
 	::end::
 </p>
