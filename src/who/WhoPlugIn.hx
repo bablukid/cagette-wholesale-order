@@ -78,7 +78,7 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 			case MultiDistribEvent(md):
 				// display a button on the homepage
 				if (App.current.user == null || App.current.user.amap == null) return;
-				for (d in md.distributions){						
+				for ( d in md.getDistributions() ){						
 					var conf = who.db.WConfig.isActive(d.contract);
 					if ( conf != null){
 						//md.actions.push({id:"who",link:"javascript:_.overlay('/p/who/popup/"+d.id+"','Commande en gros')",name:"Commande en gros",icon:"th"});
