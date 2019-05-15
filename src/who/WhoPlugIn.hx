@@ -75,12 +75,20 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 				}		*/			
 			
 
-			case MultiDistribEvent(md):
+			case MultiDistribEvent(md,mdOld):
+				var distributions = [];
+
+				if(md!=null){
+					distributions = md.getDistributions(db.Contract.TYPE_VARORDER);
+				}else{
+					if(mdOld.type!=db.Contract.TYPE_VARORDER) return;
+					distributions = mdOld.distributions;
+				}
 				// display a button on the homepage
 				if (App.current.user == null || App.current.user.amap == null) return;
-				for ( d in md.getDistributions() ){						
+				for ( d in distributions ){						
 					var conf = who.db.WConfig.isActive(d.contract);
-					if ( conf != null){
+					if ( conf != null ){
 						//md.actions.push({id:"who",link:"javascript:_.overlay('/p/who/popup/"+d.id+"','Commande en gros')",name:"Commande en gros",icon:"th"});
 
 						var s = new who.service.WholesaleOrderService(d.contract);
