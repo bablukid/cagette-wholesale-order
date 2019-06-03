@@ -25,7 +25,7 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 					nav.push({id:"who",name:"Commande en gros", link:"/p/who/"+cid,icon:"wholesale"});		
 				}
 				
-			case HourlyCron :
+			case HourlyCron(now) :
 				
 				//send email to ask to equilibrate order 
 				var from = DateTime.now().add(Hour(-1)).snap(Hour(Down)).format('%F %T');
