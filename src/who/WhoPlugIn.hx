@@ -75,15 +75,13 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 				}		*/			
 			
 
-			case MultiDistribEvent(md,mdOld):
+			case MultiDistribEvent(md):
 				var distributions = [];
 
 				if(md!=null){
 					distributions = md.getDistributions(db.Contract.TYPE_VARORDER);
-				}else{
-					if(mdOld.type!=db.Contract.TYPE_VARORDER) return;
-					distributions = mdOld.distributions;
 				}
+
 				// display a button on the homepage
 				if (App.current.user == null || App.current.user.amap == null) return;
 				for ( d in distributions ){						
@@ -99,9 +97,9 @@ class WhoPlugIn extends PlugIn implements IPlugIn{
 						params.manager = App.current.user.isContractManager(d.contract);
 						params.unit = App.current.view.unit;
 						params.now = Date.now();						
-
-						var html = App.current.processTemplate("plugin/who/block/home.mtt", params);
-						md.extraHtml += html;
+						if(md.extraHtml==null) md.extraHtml = "";
+						md.extraHtml += App.current.processTemplate("plugin/who/block/home.mtt", params);
+						
 					}
 				}
 
